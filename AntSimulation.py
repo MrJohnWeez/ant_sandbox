@@ -1,5 +1,6 @@
 
 import pygame
+import time
 
 #Custom
 import Ant
@@ -17,7 +18,7 @@ MenuH = screenH
 
 pygame.init()
 gameDisplay = pygame.display.set_mode((screenW,screenH))
-
+clock = pygame.time.Clock()
 
 #Custom Event Handling
 Spawn = True
@@ -81,7 +82,9 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1:
             mouse = pygame.mouse.get_pos()
             gameDisplay.set_at((mouse[0],mouse[1]), Colors.black)
-            antList.append(Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0))
+            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
+            #tempAnt.ChangeStep(1,2,2,2)
+            antList.append(tempAnt)
 
         #Hold down right click to spawn ants
         elif pygame.mouse.get_pressed()[2] == 1 and Spawn:
