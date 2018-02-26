@@ -1,26 +1,13 @@
 
 import pygame
-import os
-import time
-import random
-import sys
 
 #Custom
 import Ant
 import Colors
+import Button
+import CustomPath
 
-if getattr(sys, 'frozen', False):
-    # frozen
-    script_dir = os.path.dirname(sys.executable)
-else:
-    # unfrozen
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-
-def Path(localPath):
-    return os.path.join(script_dir, localPath)
-
-
-
+#Define Screen
 screenH = 600
 screenW = 800
 MenuX = 0
@@ -28,21 +15,17 @@ MenuY = 0
 MenuW = (screenW//4)
 MenuH = screenH
 
-
 pygame.init()
 gameDisplay = pygame.display.set_mode((screenW,screenH))
-# tempRect = gameDisplay.get_rect()
-# antDisplay = pygame.Rect(MenuW,MenuY,MenuW*3,MenuH)
-parray = pygame.PixelArray(gameDisplay)
-coolDown = 0
+
 
 #Custom Event Handling
 Spawn = True
 SpawnRate = 1
 spawn_Event  = pygame.USEREVENT + 1
+coolDown = 0
 
 antList = []
-
 
 def QuitSim():
     pygame.quit()
@@ -58,29 +41,32 @@ def text_objects(text, font):
     textSurf = font.render(text,True,Colors.black)
     return textSurf, textSurf.get_rect()
 
-def button(msg, x, y, w, h, inactive, active, action=None):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-
-    if x+w > mouse[0] > x and y+h > mouse[1] > y:
-        pygame.draw.rect(gameDisplay, active, (x,y,w,h))
-        if click[0] == 1 and action != None:
-            action()
-    else:
-        pygame.draw.rect(gameDisplay, inactive, (x,y,w,h))
-
-    smallText = pygame.font.Font(Path("assets\BebasNeue-Regular.ttf"),20)
-    TextSurf, TextRect = text_objects(msg, smallText)
-    TextRect.center = ((x+(w/2)),(y+(h/2)))
-    gameDisplay.blit(TextSurf, TextRect)
-
-
-
-
 
 ResetSim()
+r = [] #Pixels to render list
 isPaused = False
+
+
+def clearSim():
+    antList.clear()
+    gameDisplay.fill(Colors.white)
+    pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
+
+
+#Define Buttons
+b1 = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
+
+buttons = [b1]
+for button in buttons:
+    button.DrawButton()
+
+
+#Main Simulation loop
 while True:
+    mouse = pygame.mouse.get_pos()
+    for button in buttons:
+        button.Update(mouse[0],mouse[1])
+
     for event in pygame.event.get():
         
         #Quit Game
@@ -94,7 +80,7 @@ while True:
         #Left Click Spwn an ant
         elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1:
             mouse = pygame.mouse.get_pos()
-            parray[mouse[0]][mouse[1]] = Colors.black
+            gameDisplay.set_at((mouse[0],mouse[1]), Colors.black)
             antList.append(Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0))
 
         #Hold down right click to spawn ants
@@ -103,46 +89,36 @@ while True:
             pygame.time.set_timer(spawn_Event, SpawnRate)
 
             mouse = pygame.mouse.get_pos()
-            parray[mouse[0]][mouse[1]] = Colors.white
+            gameDisplay.set_at((mouse[0],mouse[1]), Colors.white)
             antList.append(Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0))
 
 
         #Press 'C' to clear ants and screen
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_c:
-                antList.clear()
-                gameDisplay.fill(Colors.white)
-                
-                pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
-            if event.key == pygame.K_p:
-                isPaused = not isPaused
-            if event.key == pygame.K_z:
-                print(len(antList))
+            if event.key == pygame.K_c: clearSim()
+            if event.key == pygame.K_p: isPaused = not isPaused
+            if event.key == pygame.K_z: print(len(antList))
 
-    #Buttons
-    # button("Clear", MenuX,MenuY,100,50, Colors.clearN, Colors.clearA)
-
-
-
-
-
-    r = [] #Pixels to render list
+    r.clear()
     if not isPaused:
         # Move every ant
         for ant in antList:
-            pix = parray[ant.x][ant.y]
-            if Colors.toColor(pix) == Colors.black:
+            #pix = parray[ant.x][ant.y]
+            pix = gameDisplay.get_at((ant.x,ant.y))
+            pix = (pix[0],pix[1],pix[2])
+            if pix == Colors.black:
                 # set current tile to white
-                parray[ant.x][ant.y] = Colors.white
+                gameDisplay.set_at((ant.x,ant.y), Colors.white)
                 # turn left and move
                 ant.move_black()
 
-            elif Colors.toColor(pix) == Colors.white:
+            elif pix == Colors.white:
                 # set current tile to white
-                parray[ant.x][ant.y] = Colors.black
+                gameDisplay.set_at((ant.x,ant.y), Colors.black)
                 # turn right and move
                 ant.move_white()
             
             r.append(pygame.Rect(ant.x,ant.y,1,1)) # add pixel to render
+    
 
     pygame.display.update(r)
