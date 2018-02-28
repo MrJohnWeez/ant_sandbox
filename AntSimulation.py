@@ -35,7 +35,6 @@ r = [] #Pixels to render list
 startMultipler = 512     #Must be a number 2^
 baseSpeed = 10000
 userSpeed = 1
-calculatedSpeed = userSpeed
 
 
 isPaused = False
@@ -52,13 +51,25 @@ def clearSim():
     gameDisplay.fill(Colors.white)
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
 
+def speedButton():
+    global userSpeed
+    global startMultipler
+
+    if userSpeed < startMultipler:
+        userSpeed = int(userSpeed*2)
+    else:
+        userSpeed = 1
+    
+    print("Speed: ", startMultipler//userSpeed)
+
 
 
 #Define Buttons
 b1 = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
 b2 = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
+b3 = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
 
-buttons = [b1,b2]
+buttons = [b1,b2,b3]
 
 
 
@@ -79,6 +90,7 @@ def ResetSim():
 
 
 
+
 #Set up Simulation
 ResetSim()
 
@@ -89,7 +101,10 @@ while True:
     mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
     if mouseOverMenu:
         for button in buttons:
-            button.Update(mouse[0],mouse[1])
+            if button == b3:
+                button.Update(mouse[0],mouse[1],"x"+str(startMultipler//userSpeed))
+            else:
+                button.Update(mouse[0],mouse[1])
 
     
     
@@ -130,16 +145,6 @@ while True:
             if event.key == pygame.K_z:
                 #print(len(antList))
                 print(clock.get_fps())
-            if event.key == pygame.K_EQUALS:
-                if userSpeed > 1:
-                    userSpeed = int(userSpeed//2)
-                    calculatedSpeed = userSpeed
-                    print("Speed: ", startMultipler//userSpeed)
-            if event.key == pygame.K_MINUS:
-                if userSpeed < startMultipler:
-                    userSpeed = int(userSpeed*2)
-                    calculatedSpeed = userSpeed
-                    print("Speed: ", startMultipler//userSpeed)
 
     r.clear()
     if not isPaused:
@@ -164,4 +169,4 @@ while True:
     
 
     pygame.display.update(r)
-    clock.tick(baseSpeed//calculatedSpeed)
+    clock.tick(baseSpeed//userSpeed)

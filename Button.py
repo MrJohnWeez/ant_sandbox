@@ -23,6 +23,9 @@ class Button:
         self.clickColor = Colors.shade(normalColor, 0.2)
         self.hoverColor = Colors.shade(normalColor, -0.2)
         
+    def ChangeMsg(self,newMsg):
+        self.msg = newMsg
+
     #Adds text to a button
     def AddText(self):
         smallText = pygame.font.Font(CustomPath.Path("assets\BebasNeue-Regular.ttf"),20)
@@ -31,10 +34,11 @@ class Button:
         self.gameDisplay.blit(TextSurf, TextRect)
         pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
 
-    def Update(self, mouseX, mouseY):
+    def Update(self, mouseX, mouseY, newMsg=None):
         #If not hovered
-        
         moveOver = self.x+self.w > mouseX > self.x and self.y+self.h > mouseY > self.y
+        if newMsg != None:
+            self.msg = newMsg
 
         if moveOver and self.state == 0:
             self.state = 1
@@ -49,6 +53,7 @@ class Button:
         elif moveOver and self.state == 1:
             click = pygame.mouse.get_pressed()
             if click[0] == 1 and self.action != None:
+                
                 self.state = 2
                 pygame.draw.rect(self.gameDisplay, self.clickColor, (self.x,self.y,self.w,self.h))
                 self.AddText()
