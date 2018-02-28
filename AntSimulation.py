@@ -6,6 +6,7 @@ import time
 import Ant
 import Colors
 import Button
+import ButtonToggle
 import CustomPath
 
 #Define Screen
@@ -26,27 +27,19 @@ SpawnRate = 1
 spawn_Event  = pygame.USEREVENT + 1
 coolDown = 0
 
+#Simulation Vars
 antList = []
-
-def QuitSim():
-    pygame.quit()
-    quit()
-
-def ResetSim():
-    gameDisplay.fill(Colors.white)
-    pygame.draw.rect(gameDisplay, Colors.optionsBg, (0,0,MenuW,MenuH))
-    pygame.display.update()
-    antList.clear()
-
-def text_objects(text, font):
-    textSurf = font.render(text,True,Colors.black)
-    return textSurf, textSurf.get_rect()
-
-
-ResetSim()
+isPaused = False
 r = [] #Pixels to render list
+
 isPaused = False
 
+
+
+#Button Functions
+def togglePause():
+    global isPaused
+    isPaused = not isPaused
 
 def clearSim():
     antList.clear()
@@ -54,40 +47,68 @@ def clearSim():
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
 
 
+
 #Define Buttons
 b1 = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
+b2 = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
 
-buttons = [b1]
-for button in buttons:
-    button.DrawButton()
+buttons = [b1,b2]
 
 
-#Main Simulation loop
-while True:
-    mouse = pygame.mouse.get_pos()
+
+
+#Simulation Functions
+def QuitSim():
+    pygame.quit()
+    quit()
+
+def ResetSim():
+    gameDisplay.fill(Colors.white)
+    pygame.draw.rect(gameDisplay, Colors.optionsBg, (0,0,MenuW,MenuH))
+    global buttons
     for button in buttons:
-        button.Update(mouse[0],mouse[1])
+        button.DrawButton()
+    pygame.display.update()
+    antList.clear()
 
+
+
+#Set up Simulation
+ResetSim()
+
+#Main loop
+while True:
+    #Check for Button interaction
+    mouse = pygame.mouse.get_pos()
+    mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
+    if mouseOverMenu:
+        for button in buttons:
+            button.Update(mouse[0],mouse[1])
+
+    
+    
     for event in pygame.event.get():
         
         #Quit Game
         if event.type == pygame.QUIT: QuitSim()
-
+            
         #Timer for spawn rate
         elif event.type == spawn_Event:
             Spawn = True
             pygame.time.set_timer(spawn_Event, 0)
         
         #Left Click Spwn an ant
-        elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1:
+        elif not mouseOverMenu and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1:
             mouse = pygame.mouse.get_pos()
             gameDisplay.set_at((mouse[0],mouse[1]), Colors.black)
+            pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
+
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            #tempAnt.ChangeStep(1,2,2,2)
+            tempAnt.ChangeStep(1,1,1,1)
             antList.append(tempAnt)
 
         #Hold down right click to spawn ants
-        elif pygame.mouse.get_pressed()[2] == 1 and Spawn:
+        elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn:
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
 
@@ -99,7 +120,7 @@ while True:
         #Press 'C' to clear ants and screen
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_c: clearSim()
-            if event.key == pygame.K_p: isPaused = not isPaused
+            if event.key == pygame.K_p: togglePause()
             if event.key == pygame.K_z: print(len(antList))
 
     r.clear()
