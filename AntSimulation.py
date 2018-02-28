@@ -32,6 +32,12 @@ antList = []
 isPaused = False
 r = [] #Pixels to render list
 
+startMultipler = 512     #Must be a number 2^
+baseSpeed = 10000
+userSpeed = 1
+calculatedSpeed = userSpeed
+
+
 isPaused = False
 
 
@@ -121,7 +127,19 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_c: clearSim()
             if event.key == pygame.K_p: togglePause()
-            if event.key == pygame.K_z: print(len(antList))
+            if event.key == pygame.K_z:
+                #print(len(antList))
+                print(clock.get_fps())
+            if event.key == pygame.K_EQUALS:
+                if userSpeed > 1:
+                    userSpeed = int(userSpeed//2)
+                    calculatedSpeed = userSpeed
+                    print("Speed: ", startMultipler//userSpeed)
+            if event.key == pygame.K_MINUS:
+                if userSpeed < startMultipler:
+                    userSpeed = int(userSpeed*2)
+                    calculatedSpeed = userSpeed
+                    print("Speed: ", startMultipler//userSpeed)
 
     r.clear()
     if not isPaused:
@@ -146,3 +164,4 @@ while True:
     
 
     pygame.display.update(r)
+    clock.tick(baseSpeed//calculatedSpeed)
