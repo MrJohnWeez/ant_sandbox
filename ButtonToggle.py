@@ -19,28 +19,30 @@ class ButtonToggle:
         self.action = action
         self.state = 0
         self.toggled = False
-
         self.normalColor = normalColor
         self.clickColor = Colors.shade(normalColor, 0.2)
         self.hoverColor = Colors.shade(normalColor, -0.2)
 
         self.prevClick = -1
         
-    def ToggleOn(self):
+    def ChangeMsg(self,newMsg):
+        self.msg = newMsg
+
+    def ToggleOn(self, ignoreFunction=False):
         self.state = 1
         self.toggled = True
         pygame.draw.rect(self.gameDisplay, self.clickColor, (self.x,self.y,self.w,self.h))
-        self.AddText()
-        if self.action != None:
+        if self.action != None and not ignoreFunction:
             self.action()
+        self.AddText()
 
     def ToggleOff(self, ignoreFunction=False):
         self.toggled = False
         self.state = 0
         pygame.draw.rect(self.gameDisplay, self.normalColor, (self.x,self.y,self.w,self.h))
-        self.AddText()
         if self.action != None and not ignoreFunction:
             self.action()
+        self.AddText()
 
     #Adds text to a button
     def AddText(self):
@@ -65,6 +67,12 @@ class ButtonToggle:
         else:
             self.prevClick = -1
 
+    def ForceUpdate(self, ToggleOn):
+        if ToggleOn:
+            self.ToggleOn(True)
+        else:
+            self.ToggleOff(True)
+            
 
     #Draws initual button state
     def DrawButton(self):

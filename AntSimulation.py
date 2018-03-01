@@ -8,6 +8,8 @@ import Colors
 import Button
 import ButtonToggle
 import CustomPath
+import Text
+
 
 #Define Screen
 screenH = 600
@@ -41,15 +43,37 @@ isPaused = False
 
 
 
+def text_objects(text, font):
+    textSurf = font.render(text,True,Colors.black)
+    return textSurf, textSurf.get_rect()
+
+def AddText():
+    smallText = pygame.font.Font(CustomPath.Path("assets\BebasNeue-Regular.ttf"),20)
+    TextSurf, TextRect = text_objects(self.msg, smallText)
+    TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
+    self.gameDisplay.blit(TextSurf, TextRect)
+    pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
+
+
+
+
 #Button Functions
 def togglePause():
     global isPaused
     isPaused = not isPaused
 
+    print("Is Game Pause: ", isPaused)
+    if isPaused:
+        bPause.ChangeMsg("Play")
+    else:
+        bPause.ChangeMsg("Pause")
+
+
 def clearSim():
     antList.clear()
     gameDisplay.fill(Colors.white)
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
+
 
 def speedButton():
     global userSpeed
@@ -59,17 +83,21 @@ def speedButton():
         userSpeed = int(userSpeed*2)
     else:
         userSpeed = 1
-    
+
+    global b3
+    bSpeed.ChangeMsg("x"+str(startMultipler//userSpeed))
     print("Speed: ", startMultipler//userSpeed)
 
 
 
 #Define Buttons
-b1 = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
-b2 = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
-b3 = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
+bClear = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
+bPause = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
+bSpeed = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
 
-buttons = [b1,b2,b3]
+buttons = [bClear,bPause,bSpeed]
+
+
 
 
 
@@ -93,6 +121,8 @@ def ResetSim():
 
 #Set up Simulation
 ResetSim()
+Text.Text("By: MrJohnWeez",CustomPath.Path("assets\BebasNeue-Regular.ttf"),16,Colors.white,1,screenH+3,gameDisplay,True,"bottomleft")
+Text.Text("0/500",CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1,screenH+3-16,gameDisplay,True,"bottomleft")
 
 #Main loop
 while True:
@@ -101,10 +131,7 @@ while True:
     mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
     if mouseOverMenu:
         for button in buttons:
-            if button == b3:
-                button.Update(mouse[0],mouse[1],"x"+str(startMultipler//userSpeed))
-            else:
-                button.Update(mouse[0],mouse[1])
+            button.Update(mouse[0],mouse[1])
 
     
     
@@ -141,7 +168,9 @@ while True:
         #Press 'C' to clear ants and screen
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_c: clearSim()
-            if event.key == pygame.K_p: togglePause()
+            if event.key == pygame.K_p:
+                togglePause()
+                bPause.ForceUpdate(isPaused)
             if event.key == pygame.K_z:
                 #print(len(antList))
                 print(clock.get_fps())
