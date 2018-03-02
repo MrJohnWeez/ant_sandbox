@@ -1,4 +1,5 @@
 import pygame
+import Colors
 
 class Text:
     def __init__(self, text, font, size, color, x, y, display, shouldUpdate=False, pos='topleft'):
@@ -15,13 +16,16 @@ class Text:
         self.AddText()  #Update Text
         
     
-    def text_objects(self, font):
+    def text_objects(self, font, backgroundColor=None):
         # Make a text object and return its surface and rectangle
-        textSurf = font.render(self.text,True,self.color)
+        if backgroundColor == None:
+            textSurf = font.render(self.text,True,self.color)
+        else:
+            textSurf = font.render(self.text,True,self.color,Colors.optionsBg)
         return textSurf, textSurf.get_rect()
 
-    def AddText(self, forceUpdate=False):
-        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
+    def AddText(self, forceUpdate=False,backgroundColor=None):
+        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size),backgroundColor)
 
         # Make the text positioned based on given args
         if self.pos == 'topleft':
@@ -46,11 +50,11 @@ class Text:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)
             pygame.display.update(self.TextRect) #self.TextRect
 
-    def ForceUpdate(self, newText=None):
+    def ForceUpdate(self, newText=None, backgroundColor=None):
         # Force text to update
         if newText != None:
             self.text = newText
-            AddText(True)
+            self.AddText(True,backgroundColor)
         else:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)
             pygame.display.update(self.TextRect)
