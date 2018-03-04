@@ -14,6 +14,7 @@ class Text:
         self.shouldUpdate = shouldUpdate
         self.pos = pos
         self.AddText()  #Update Text
+        self.prevTextLength = len(str(text))
         
     
     def text_objects(self, font, backgroundColor=None):
@@ -21,7 +22,7 @@ class Text:
         if backgroundColor == None:
             textSurf = font.render(self.text,True,self.color)
         else:
-            textSurf = font.render(self.text,True,self.color,Colors.optionsBg)
+            textSurf = font.render(self.text,True,self.color,backgroundColor)
         return textSurf, textSurf.get_rect()
 
     def AddText(self, forceUpdate=False,backgroundColor=None):
@@ -48,12 +49,18 @@ class Text:
         # Update the text on screen
         if self.shouldUpdate or forceUpdate:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)
-            pygame.display.update(self.TextRect) #self.TextRect
+            pygame.display.update(self.TextRect)
 
     def ForceUpdate(self, newText=None, backgroundColor=None):
         # Force text to update
         if newText != None:
-            self.text = newText
+            tempstr = " "
+            if len(newText) < self.prevTextLength:
+                factor = self.prevTextLength - len(newText)
+                tempstr = tempstr * factor * 3
+                
+            self.prevTextLength = len(newText)
+            self.text = newText + tempstr
             self.AddText(True,backgroundColor)
         else:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)

@@ -2,6 +2,20 @@
 import pygame
 import time
 
+
+"""
+ToDo List:
+-Use lambda x: printThis("test") to make a univeral function for sep inc/dec
+
+
+
+
+
+"""
+
+
+
+
 #Custom
 import Ant
 import Colors
@@ -9,7 +23,6 @@ import Button
 import ButtonToggle
 import CustomPath
 import Text
-
 
 #Define Screen
 screenH = 600
@@ -19,6 +32,7 @@ MenuY = 0
 MenuW = (screenW//4)
 MenuH = screenH
 
+#Set up pygame screen
 pygame.init()
 gameDisplay = pygame.display.set_mode((screenW,screenH))
 clock = pygame.time.Clock()
@@ -35,12 +49,14 @@ isPaused = False
 r = [] #Pixels to render list
 allowedAntNum = 500
 
+#Simulation speed vars
 startMultipler = 512     #Must be a number 2^
 baseSpeed = 10000
 userSpeed = 1
-
-
 isPaused = False
+
+#Ant step vars
+stepUp = 1
 
 
 
@@ -55,9 +71,15 @@ def AddText():
     self.gameDisplay.blit(TextSurf, TextRect)
     pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
 
+
+
+
 #TextBoxes
-TWatermark = Text.Text("By: MrJohnWeez",CustomPath.Path("assets\BebasNeue-Regular.ttf"),16,Colors.white,1,screenH+3,gameDisplay,True,"bottomleft")
-TantCount = Text.Text("0/"+str(allowedAntNum),CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1,screenH+3-16,gameDisplay,True,"bottomleft")
+T_Watermark = Text.Text("By: MrJohnWeez",CustomPath.Path("assets\BebasNeue-Regular.ttf"),16,Colors.white,1,screenH+3,gameDisplay,True,"bottomleft")
+T_AntCount = Text.Text("0/"+str(allowedAntNum),CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1,screenH+3-16,gameDisplay,True,"bottomleft")
+T_AntStepUp = Text.Text("1",CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1+25,screenH+3-16-50,gameDisplay,True,"bottomleft")
+
+texts = [T_Watermark,T_AntCount,T_AntStepUp]
 
 
 #Button Functions
@@ -65,7 +87,6 @@ def togglePause():
     global isPaused
     isPaused = not isPaused
 
-    print("Is Game Pause: ", isPaused)
     if isPaused:
         bPause.ChangeMsg("Play")
     else:
@@ -76,7 +97,7 @@ def clearSim():
     antList.clear()
     gameDisplay.fill(Colors.white)
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
-    TantCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
+    T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
 
 
 def speedButton():
@@ -92,15 +113,27 @@ def speedButton():
     bSpeed.ChangeMsg("x"+str(startMultipler//userSpeed))
     print("Speed: ", startMultipler//userSpeed)
 
+def ISLUP():
+    global stepUp
+    global T_AntStepUp
+    stepUp -= 1
+    T_AntStepUp.ForceUpdate(str(stepUp),Colors.optionsBg)
 
+def ISRUP():
+    global stepUp
+    global T_AntStepUp
+    stepUp += 1
+    T_AntStepUp.ForceUpdate(str(stepUp),Colors.optionsBg)
 
 #Define Buttons
 bClear = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
 bPause = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
 bSpeed = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
 
-buttons = [bClear,bPause,bSpeed]
+b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, ISLUP)
+b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, ISRUP)
 
+buttons = [bClear,bPause,bSpeed,b_LUp,b_RUp]
 
 
 
@@ -114,13 +147,17 @@ def QuitSim():
 def ResetSim():
     gameDisplay.fill(Colors.white)
     pygame.draw.rect(gameDisplay, Colors.optionsBg, (0,0,MenuW,MenuH))
+
+    #Reset buttons
     global buttons
     for button in buttons:
         button.DrawButton()
+
     pygame.display.update()
     antList.clear()
-    TantCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum))
-    TWatermark.ForceUpdate("MrJohnWeez")
+
+    for text in texts:
+        text.ForceUpdate()
 
 
 
@@ -152,24 +189,26 @@ while True:
         
         #Left Click Spwn an ant
         elif not mouseOverMenu and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1 and len(antList) < allowedAntNum:
-            mouse = pygame.mouse.get_pos()
             gameDisplay.set_at((mouse[0],mouse[1]), Colors.black)
             pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(1,1,1,1)
+            tempAnt.ChangeStep(stepUp,stepUp,stepUp,stepUp)
             antList.append(tempAnt)
-            TantCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
+            T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
 
         #Hold down right click to spawn ants
         elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn and len(antList) < allowedAntNum:
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
-
-            mouse = pygame.mouse.get_pos()
             gameDisplay.set_at((mouse[0],mouse[1]), Colors.white)
-            antList.append(Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0))
-            TantCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
+            pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
+
+            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
+            tempAnt.ChangeStep(stepUp,stepUp,stepUp,stepUp)
+            antList.append(tempAnt)
+
+            T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
 
 
         #Press 'C' to clear ants and screen
@@ -204,5 +243,5 @@ while True:
             r.append(pygame.Rect(ant.x,ant.y,1,1)) # add pixel to render
     
 
-    pygame.display.update(r)
-    clock.tick(baseSpeed//userSpeed)
+    pygame.display.update(r)    #Update ants on screen only
+    clock.tick(baseSpeed//userSpeed)    #Control the framerate of the simulation (Simulation speed)
