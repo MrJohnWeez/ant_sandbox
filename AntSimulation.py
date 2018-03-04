@@ -23,6 +23,7 @@ import Button
 import ButtonToggle
 import CustomPath
 import Text
+import AntStepVar
 
 #Define Screen
 screenH = 600
@@ -56,7 +57,7 @@ userSpeed = 1
 isPaused = False
 
 #Ant step vars
-stepUp = 1
+stepUp = AntStepVar.AntStepVar(0,screenH,1)
 
 
 
@@ -113,25 +114,19 @@ def speedButton():
     bSpeed.ChangeMsg("x"+str(startMultipler//userSpeed))
     print("Speed: ", startMultipler//userSpeed)
 
-def ISLUP():
-    global stepUp
-    global T_AntStepUp
-    stepUp -= 1
-    T_AntStepUp.ForceUpdate(str(stepUp),Colors.optionsBg)
 
-def ISRUP():
-    global stepUp
-    global T_AntStepUp
-    stepUp += 1
-    T_AntStepUp.ForceUpdate(str(stepUp),Colors.optionsBg)
+def AntStep(var, textVar, shouldIncrease, stepValue=1):
+    var.UpdateValue(shouldIncrease,stepValue)
+    textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
+    
 
 #Define Buttons
 bClear = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
 bPause = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
 bSpeed = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
 
-b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, ISLUP)
-b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, ISRUP)
+b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, False))
+b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, True))
 
 buttons = [bClear,bPause,bSpeed,b_LUp,b_RUp]
 
@@ -193,7 +188,7 @@ while True:
             pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp,stepUp,stepUp,stepUp)
+            tempAnt.ChangeStep(stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue())
             antList.append(tempAnt)
             T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
 
@@ -201,11 +196,11 @@ while True:
         elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn and len(antList) < allowedAntNum:
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
-            gameDisplay.set_at((mouse[0],mouse[1]), Colors.white)
+            gameDisplay.set_at((mouse[0],mouse[1]), Colors.black)
             pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp,stepUp,stepUp,stepUp)
+            tempAnt.ChangeStep(stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue())
             antList.append(tempAnt)
 
             T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
