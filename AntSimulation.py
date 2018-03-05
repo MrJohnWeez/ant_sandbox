@@ -5,16 +5,12 @@ import time
 
 """
 ToDo List:
--Use lambda x: printThis("test") to make a univeral function for sep inc/dec
-
+-Multiply and scale the ant step boxes
 
 
 
 
 """
-
-
-
 
 #Custom
 import Ant
@@ -24,6 +20,8 @@ import ButtonToggle
 import CustomPath
 import Text
 import AntStepVar
+import InputBox
+
 
 #Define Screen
 screenH = 600
@@ -115,24 +113,26 @@ def speedButton():
     print("Speed: ", startMultipler//userSpeed)
 
 
-def AntStep(var, textVar, shouldIncrease, stepValue=1):
-    var.UpdateValue(shouldIncrease,stepValue)
-    textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
-    
+
+
+
 
 #Define Buttons
 bClear = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
 bPause = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
 bSpeed = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
 
-b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, False))
-b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, True))
-
-buttons = [bClear,bPause,bSpeed,b_LUp,b_RUp]
 
 
+buttons = [bClear,bPause,bSpeed]
+
+def UpdateStepVar(var, textBox):
+    var.UpdateByString(textBox.getText())
+    textBox.updateText(str(var.GetValue()))
 
 
+input_box1 = InputBox.InputBox(1, 300, 50, 25,pygame.Color(255,255,255),pygame.Color(48,48,48),gameDisplay,CustomPath.Path("assets\BebasNeue-Regular.ttf"),text="1",action=lambda x: UpdateStepVar(stepUp, x))
+input_boxes = [input_box1]
 
 #Simulation Functions
 def QuitSim():
@@ -147,14 +147,13 @@ def ResetSim():
     global buttons
     for button in buttons:
         button.DrawButton()
+    input_box1.update()
 
     pygame.display.update()
     antList.clear()
 
     for text in texts:
         text.ForceUpdate()
-
-
 
 
 #Set up Simulation
@@ -170,10 +169,10 @@ while True:
         for button in buttons:
             button.Update(mouse[0],mouse[1])
 
-    
-    
     for event in pygame.event.get():
-        
+        for box in input_boxes:
+            box.handle_event(event)
+
         #Quit Game
         if event.type == pygame.QUIT: QuitSim()
             
@@ -240,3 +239,42 @@ while True:
 
     pygame.display.update(r)    #Update ants on screen only
     clock.tick(baseSpeed//userSpeed)    #Control the framerate of the simulation (Simulation speed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+Other:
+
+#b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, False))
+#b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, True))
+
+# def AntStep(var, textVar, shouldIncrease, stepValue=1):
+#     var.UpdateValue(shouldIncrease,stepValue)
+#     textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
+
+"""
