@@ -47,6 +47,9 @@ antList = []
 isPaused = False
 r = [] #Pixels to render list
 allowedAntNum = 500
+input_boxes = []
+buttons = []
+texts = []
 
 #Simulation speed vars
 startMultipler = 512     #Must be a number 2^
@@ -55,8 +58,45 @@ userSpeed = 1
 isPaused = False
 
 #Ant step vars
-stepUp = AntStepVar.AntStepVar(0,screenH,1)
+stepUp = AntStepVar.AntStepVar(0,screenH)
+stepDown = AntStepVar.AntStepVar(0,screenH)
+stepRight = AntStepVar.AntStepVar(0,screenH)
+stepLeft = AntStepVar.AntStepVar(0,screenH)
 
+AntStepVars = [stepUp,stepDown,stepRight,stepLeft]
+
+
+
+#Classes:
+class StepBoxes:
+    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, updateVars):
+        self.x = x
+        self.y = y
+        self.fontPath = fontPath
+        self.fontSize = fontSize
+        self.Gdisplay = display
+        self.runFunction = runFunction
+        self.clearFunction = clearFunction
+        self.updateVars = updateVars
+        self.xBox = self.x+6
+        T_Title = Text.Text("Ant Steps",self.fontPath,fontSize,Colors.white,self.x,self.y,self.Gdisplay,True,"bottomleft")
+        T_UpStep = Text.Text("Up :",self.fontPath,fontSize,Colors.white,self.x,self.y,self.Gdisplay,True,"topright")
+        T_DownStep = Text.Text("Down :",self.fontPath,fontSize,Colors.white,self.x,T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay,True,"topright")
+        T_RightStep =Text.Text("Right :",self.fontPath,fontSize,Colors.white,self.x,T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay,True,"topright")
+        T_LeftStep = Text.Text("Left :",self.fontPath,fontSize,Colors.white,self.x,T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay,True,"topright")
+        self.textObjects = [T_UpStep,T_DownStep,T_RightStep,T_LeftStep,T_Title]
+
+        IB_UpStep = InputBox.InputBox(self.xBox, self.y, 50, fontSize,pygame.Color(255,255,255),pygame.Color(48,48,48),self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[0], x))
+        IB_DownStep = InputBox.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,pygame.Color(255,255,255),pygame.Color(48,48,48),self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[1], x))
+        IB_RightStep = InputBox.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,pygame.Color(255,255,255),pygame.Color(48,48,48),self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[2], x))
+        IB_LeftStep = InputBox.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,pygame.Color(255,255,255),pygame.Color(48,48,48),self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[3], x))
+
+        self.boxObjects = [IB_UpStep,IB_DownStep,IB_RightStep,IB_LeftStep]
+        self.h = abs(IB_LeftStep.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
+        
+        restButton = Button.Button("R", IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1],20,self.h, Colors.clearN, self.Gdisplay, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+        self.buttonObjects = [restButton]
+        self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(restButton.x+restButton.w))
 
 
 def text_objects(text, font):
@@ -76,9 +116,7 @@ def AddText():
 #TextBoxes
 T_Watermark = Text.Text("By: MrJohnWeez",CustomPath.Path("assets\BebasNeue-Regular.ttf"),16,Colors.white,1,screenH+3,gameDisplay,True,"bottomleft")
 T_AntCount = Text.Text("0/"+str(allowedAntNum),CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1,screenH+3-16,gameDisplay,True,"bottomleft")
-T_AntStepUp = Text.Text("1",CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1+25,screenH+3-16-50,gameDisplay,True,"bottomleft")
-
-texts = [T_Watermark,T_AntCount,T_AntStepUp]
+texts += [T_Watermark,T_AntCount]
 
 
 #Button Functions
@@ -115,24 +153,25 @@ def speedButton():
 
 
 
-
-
 #Define Buttons
 bClear = Button.Button("Clear", MenuX,MenuY,100,50, Colors.clearN, gameDisplay, clearSim)
 bPause = ButtonToggle.ButtonToggle("Pause",  MenuX,MenuY+60,100,50, Colors.clearN, gameDisplay, togglePause)
 bSpeed = Button.Button("x"+str(startMultipler//userSpeed), MenuX,MenuY+120,100,50, Colors.clearN, gameDisplay, speedButton)
+buttons += [bClear,bPause,bSpeed]
 
-
-
-buttons = [bClear,bPause,bSpeed]
 
 def UpdateStepVar(var, textBox):
     var.UpdateByString(textBox.getText())
     textBox.updateText(str(var.GetValue()))
 
+def ResetStepVars(varList, boxVars):
+    for i in range(len(varList)):
+        varList[i].Reset()
+        boxVars[i].updateText(str(varList[i].GetValue()))
 
-input_box1 = InputBox.InputBox(1, 300, 50, 25,pygame.Color(255,255,255),pygame.Color(48,48,48),gameDisplay,CustomPath.Path("assets\BebasNeue-Regular.ttf"),text="1",action=lambda x: UpdateStepVar(stepUp, x))
-input_boxes = [input_box1]
+#Ant step boxes module
+StepBox1 = StepBoxes(50,screenH+3-200,CustomPath.Path("assets\BebasNeue-Regular.ttf"), 20, gameDisplay, UpdateStepVar, ResetStepVars, AntStepVars)
+stepBoxes = [StepBox1]
 
 #Simulation Functions
 def QuitSim():
@@ -147,13 +186,21 @@ def ResetSim():
     global buttons
     for button in buttons:
         button.DrawButton()
-    input_box1.update()
-
+    for box in input_boxes:
+        box.update()
+    for text in texts:
+        text.ForceUpdate()
+    for sbox in stepBoxes:
+        for T in sbox.textObjects:
+            T.ForceUpdate()
+        for B in sbox.boxObjects:
+            B.update()
+        for Bn in sbox.buttonObjects:
+            Bn.DrawButton()
     pygame.display.update()
     antList.clear()
 
-    for text in texts:
-        text.ForceUpdate()
+    
 
 
 #Set up Simulation
@@ -168,10 +215,17 @@ while True:
     if mouseOverMenu:
         for button in buttons:
             button.Update(mouse[0],mouse[1])
+        for sbox in stepBoxes:
+            for Bn in sbox.buttonObjects:
+                Bn.Update(mouse[0],mouse[1])
 
     for event in pygame.event.get():
         for box in input_boxes:
             box.handle_event(event)
+
+        for sbox in stepBoxes:
+            for B in sbox.boxObjects:
+                B.handle_event(event)
 
         #Quit Game
         if event.type == pygame.QUIT: QuitSim()
@@ -187,7 +241,7 @@ while True:
             pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue())
+            tempAnt.ChangeStep(stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
             antList.append(tempAnt)
             T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
 
@@ -199,7 +253,7 @@ while True:
             pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue(),stepUp.GetValue())
+            tempAnt.ChangeStep(stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
             antList.append(tempAnt)
 
             T_AntCount.ForceUpdate(str(len(antList))+"/"+str(allowedAntNum),Colors.optionsBg)
@@ -276,5 +330,9 @@ Other:
 # def AntStep(var, textVar, shouldIncrease, stepValue=1):
 #     var.UpdateValue(shouldIncrease,stepValue)
 #     textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
+
+#T_AntStepUp = Text.Text("1",CustomPath.Path("assets\BebasNeue-Regular.ttf"),20,Colors.white,1+25,screenH+3-16-50,gameDisplay,True,"bottomleft")
+
+#input_box1 = InputBox.InputBox(1, 300, 50, 25,pygame.Color(255,255,255),pygame.Color(48,48,48),gameDisplay,CustomPath.Path("assets\BebasNeue-Regular.ttf"),text="1",action=lambda x: UpdateStepVar(stepUp, x))
 
 """

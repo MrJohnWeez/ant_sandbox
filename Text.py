@@ -65,3 +65,18 @@ class Text:
         else:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)
             pygame.display.update(self.TextRect)
+
+
+    def GetWidth(self):
+        return self.TextRect.w
+
+    def GetHieght(self):
+        return self.TextRect.h
+    
+    def GetX(self):
+        return self.TextRect.x
+    def GetY(self):
+        return self.TextRect.y
+
+
+

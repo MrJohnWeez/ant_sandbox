@@ -70,3 +70,19 @@ class InputBox:
 
     def getText(self):
         return self.text
+    def getX(self):
+        return self.rect.x
+    def getY(self):
+        return self.rect.y
+    def getW(self):
+        return self.rect.w
+    def getH(self):
+        return self.rect.h
+    def getTopLeft(self):
+        return (self.getX(), self.getY())
+    def getTopRight(self):
+        return (self.getX()+self.getW(), self.getY())
+    def getBottomLeft(self):
+        return (self.getX(), self.getY()+self.getH())
+    def getBottomRight(self):
+        return (self.getX()+self.getW(), self.getY()+self.getH())

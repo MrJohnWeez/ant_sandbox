@@ -32,4 +32,13 @@ class AntStepVar:
 
     def GetValue(self):
         return self.value
+    
+    def SetValue(self, value):
+        self.value = value
+
+    def GetDefault(self):
+        return self.startValue
+
+    def Reset(self):
+        self.value = self.startValue
         
