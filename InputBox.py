@@ -23,7 +23,7 @@ class InputBox:
             # If the user clicked on the input_box rect.
             if self.rect.collidepoint(event.pos):
                 # Toggle the active variable.
-                if self.text.isdigit() and event.button == 4 or event.button == 5:
+                if self.text.isdigit() and event.button == 4 or event.button == 5 and self.text != '':
                     if event.button == 4: self.text = str(int(self.text)+1)
                     elif event.button == 5: self.text = str(int(self.text)-1)
                     self.active = False

@@ -1,8 +1,8 @@
 import pygame
-import Colors
 
 class Text:
-    def __init__(self, text, font, size, color, x, y, display, shouldUpdate=False, pos='topleft'):
+    def __init__(self, text, font, size, color, x, y, display, shouldUpdate=False, pos='topleft', backgroundColor=None):
+        """Creates a text object that can be updated"""
         self.text = text
         self.font = font
         self.size = size
@@ -10,23 +10,37 @@ class Text:
         self.x = x
         self.y = y
         self.gameDisplay = display
+        self.backgroundColor = backgroundColor
         self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
         self.shouldUpdate = shouldUpdate
         self.pos = pos
         self.AddText()  #Update Text
         self.prevTextLength = len(str(text))
         
+        
     
-    def text_objects(self, font, backgroundColor=None):
+    def text_objects(self, font):
+        """ Returns the new rendered text surface and its Rect """
         # Make a text object and return its surface and rectangle
-        if backgroundColor == None:
+        if self.backgroundColor == None:
             textSurf = font.render(self.text,True,self.color)
         else:
-            textSurf = font.render(self.text,True,self.color,backgroundColor)
+            textSurf = font.render(self.text,True,self.color,self.backgroundColor)
         return textSurf, textSurf.get_rect()
 
-    def AddText(self, forceUpdate=False,backgroundColor=None):
-        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size),backgroundColor)
+    def AddText(self, newText=None, forceUpdate=False):
+        """changes and updates the text object"""
+        if newText != None:
+            # Make text rect same length as before to clear old text out
+            tempstr = " "
+            if len(newText) < self.prevTextLength:
+                factor = self.prevTextLength - len(newText)
+                tempstr = tempstr * factor * 3
+                
+            self.prevTextLength = len(newText)
+            self.text = newText + tempstr
+            
+        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
 
         # Make the text positioned based on given args
         if self.pos == 'topleft':
@@ -51,32 +65,27 @@ class Text:
             self.gameDisplay.blit(self.TextSurf, self.TextRect)
             pygame.display.update(self.TextRect)
 
-    def ForceUpdate(self, newText=None, backgroundColor=None):
-        # Force text to update
-        if newText != None:
-            tempstr = " "
-            if len(newText) < self.prevTextLength:
-                factor = self.prevTextLength - len(newText)
-                tempstr = tempstr * factor * 3
-                
-            self.prevTextLength = len(newText)
-            self.text = newText + tempstr
-            self.AddText(True,backgroundColor)
-        else:
-            self.gameDisplay.blit(self.TextSurf, self.TextRect)
-            pygame.display.update(self.TextRect)
-
+    def ForceBlit(self):
+        """Forces to draw the text to screen but does not update it"""
+        self.gameDisplay.blit(self.TextSurf, self.TextRect)
 
     def GetWidth(self):
+        """Returns width of text object"""
         return self.TextRect.w
 
     def GetHieght(self):
+        """Returns hiehgt of text object"""
         return self.TextRect.h
     
     def GetX(self):
+        """Returns x position of text object"""
         return self.TextRect.x
     def GetY(self):
+        """Returns y position of text object"""
         return self.TextRect.y
+    def GetRect(self):
+        """Returns whole rect of text object"""
+        return self.TextRect
 
 
 

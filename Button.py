@@ -3,14 +3,9 @@ import pygame
 import CustomPath
 import Colors
 
-def text_objects(text, font):
-    textSurf = font.render(text,True,Colors.black)
-    return textSurf, textSurf.get_rect()
-
-
 class Button:
-    def __init__(self, msg, x, y, w, h, normalColor, display, action=None):
-        self.msg = msg
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None):
+        """Creates a button object that can be clicked"""
         self.x = x
         self.y = y
         self.w = w
@@ -18,59 +13,62 @@ class Button:
         self.state = 1
         self.gameDisplay = display
         self.action = action
+        self.textObject = textObject
 
         self.normalColor = normalColor
-        self.clickColor = Colors.shade(normalColor, 0.2)
-        self.hoverColor = Colors.shade(normalColor, -0.2)
+        self.clickColor = Colors.shadeAlpha(normalColor, 0.2)
+        self.hoverColor = Colors.shadeAlpha(normalColor, -0.2)
         
     def ChangeMsg(self,newMsg):
-        self.msg = newMsg
+        """ Changes the text over the button """
+        self.textObject.AddText(newMsg)
 
     #Adds text to a button
-    def AddText(self):
-        smallText = pygame.font.Font(CustomPath.Path("assets\BebasNeue-Regular.ttf"),20)
-        TextSurf, TextRect = text_objects(self.msg, smallText)
-        TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
-        self.gameDisplay.blit(TextSurf, TextRect)
+    def UpdateToScreen(self, buttonColor):
+        """Draw button on screen"""
+        #Update the text object and update the whole button on the game screen
+        pygame.draw.rect(self.gameDisplay, buttonColor, (self.x,self.y,self.w,self.h))
+        self.textObject.TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
+        self.textObject.ForceBlit()
         pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
 
     def Update(self, mouseX, mouseY, newMsg=None):
+        """Update if user has interacted with button"""
         #If not hovered
         moveOver = self.x+self.w > mouseX > self.x and self.y+self.h > mouseY > self.y
-        if newMsg != None:
-            self.msg = newMsg
+
+        #If message has changed
+        if newMsg != None: self.textObject.AddText(newMsg)
 
         if moveOver and self.state == 0:
+            #Mouse is over button change the color state
             self.state = 1
-            pygame.draw.rect(self.gameDisplay, self.hoverColor, (self.x,self.y,self.w,self.h))
-            self.AddText()
+            self.UpdateToScreen(self.hoverColor)
             
         elif not moveOver and (self.state == 1 or self.state == 2):
+            #Mouse no longer over button change color state to normal
             self.state = 0
-            pygame.draw.rect(self.gameDisplay, self.normalColor, (self.x,self.y,self.w,self.h))
-            self.AddText()
+            self.UpdateToScreen(self.normalColor)
 
         elif moveOver and self.state == 1:
+            #Mouse is over button and it is ready to be clicked
             click = pygame.mouse.get_pressed()
             if click[0] == 1 and self.action != None:
-                
                 self.state = 2
-                pygame.draw.rect(self.gameDisplay, self.clickColor, (self.x,self.y,self.w,self.h))
-                self.AddText()
+                self.UpdateToScreen(self.clickColor)
                 self.action()
 
         elif self.state == 2 and pygame.mouse.get_pressed()[0] == 0:
-            pygame.draw.rect(self.gameDisplay, self.normalColor, (self.x,self.y,self.w,self.h))
-            self.AddText()
+            #Mouse has stopped holding down click so turn button to normal color
+            self.UpdateToScreen(self.normalColor)
             self.state = 0
 
 
     #Draws initual button state
     def DrawButton(self):
+        """ Draws button on command"""
         mouse = pygame.mouse.get_pos()
         self.Update(mouse[0],mouse[1])
-        self.AddText()
-
     
 
     
