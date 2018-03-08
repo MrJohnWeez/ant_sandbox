@@ -32,10 +32,11 @@ class Button:
         self.textObject.ForceBlit()
         pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
 
-    def Update(self, mouseX, mouseY, newMsg=None):
+    def Update(self, newMsg=None):
         """Update if user has interacted with button"""
+        mouse = pygame.mouse.get_pos()
         #If not hovered
-        moveOver = self.x+self.w > mouseX > self.x and self.y+self.h > mouseY > self.y
+        moveOver = self.x+self.w > mouse[0] > self.x and self.y+self.h > mouse[1] > self.y
 
         #If message has changed
         if newMsg != None: self.textObject.AddText(newMsg)
@@ -67,8 +68,7 @@ class Button:
     #Draws initual button state
     def DrawButton(self):
         """ Draws button on command"""
-        mouse = pygame.mouse.get_pos()
-        self.Update(mouse[0],mouse[1])
+        self.Update()
     
 
     

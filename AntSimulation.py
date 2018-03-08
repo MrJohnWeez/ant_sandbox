@@ -17,12 +17,11 @@ ToDo List:
 #Custom
 import Ant
 import Colors
-import Button
-import ButtonToggle
 import CustomPath
 import Text
 import AntStepVar
 import InputBox
+import Interactive
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
@@ -104,7 +103,7 @@ class StepBoxes:
         #Reset Button
         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
         T_reset = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
-        B_reset = Button.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+        B_reset = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
 
         self.buttonObjects = [B_reset]
         self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
@@ -141,11 +140,11 @@ def speedButton():
 
 #Define Buttons
 T_clear = Text.Text("Clear",BNFont,20,Colors.A_black,MenuX,MenuY,gameDisplay)
-bClear = Button.Button(MenuX,MenuY,100,50, Colors.A_clearN, gameDisplay, T_clear, clearSim)
+bClear = Interactive.Button(MenuX,MenuY,100,50, Colors.A_clearN, gameDisplay, T_clear, clearSim)
 T_pause = Text.Text("Pause",BNFont,20,Colors.A_black,MenuX,MenuY+60,gameDisplay)
-bPause = Button.Button(MenuX,MenuY+60,100,50, Colors.A_clearN, gameDisplay, T_pause, togglePause)
+bPause = Interactive.ButtonToggle(MenuX,MenuY+60,100,50, Colors.A_clearN, gameDisplay, T_pause, togglePause)
 T_Speed = Text.Text("x"+str(startMultipler//userSpeed),BNFont,20,Colors.A_black,MenuX,MenuY+120,gameDisplay)
-bSpeed = Button.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay, T_Speed, speedButton)
+bSpeed = Interactive.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay, T_Speed, speedButton)
 buttons += [bClear,bPause,bSpeed]
 
 
@@ -204,10 +203,10 @@ while True:
     mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
     if mouseOverMenu:
         for button in buttons:
-            button.Update(mouse[0],mouse[1])
+            button.Update()
         for sbox in stepBoxes:
             for Bn in sbox.buttonObjects:
-                Bn.Update(mouse[0],mouse[1])
+                Bn.Update()
 
     for event in pygame.event.get():
         for box in input_boxes:
@@ -300,11 +299,87 @@ while True:
 
 
 
+# #Classes:
+# class StepBoxes:
+#     def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, updateVars):
+#         """Creates an interactive clickable text box that supports number scrolling when 
+#         mouse wheel is moved while hovering over the box"""
+#         self.x = x
+#         self.y = y
+#         self.fontPath = fontPath
+#         self.fontSize = fontSize
+#         self.Gdisplay = display
+#         self.runFunction = runFunction
+#         self.clearFunction = clearFunction
+#         self.updateVars = updateVars
+#         self.xBox = self.x+6
+
+#         #Text lables
+#         T_Title = Text.Text("Ant Steps",self.fontPath,fontSize,Colors.A_white,self.x,self.y,self.Gdisplay,True,"bottomleft")
+#         T_UpStep = Text.Text("Up :",self.fontPath,fontSize,Colors.A_white,self.x,self.y,self.Gdisplay,True,"topright")
+#         T_DownStep = Text.Text("Down :",self.fontPath,fontSize,Colors.A_white,self.x,T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay,True,"topright")
+#         T_RightStep =Text.Text("Right :",self.fontPath,fontSize,Colors.A_white,self.x,T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay,True,"topright")
+#         T_LeftStep = Text.Text("Left :",self.fontPath,fontSize,Colors.A_white,self.x,T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay,True,"topright")
+#         self.textObjects = [T_UpStep,T_DownStep,T_RightStep,T_LeftStep,T_Title]
+
+#         #Clickable input boxes
+#         T_upstep = Text.Text("1",BNFont,20,Colors.A_white,self.xBox, self.y,self.Gdisplay)
+#         IB_UpStep = InputBox.InputBox(self.xBox, self.y, 50, fontSize, Colors.A_white,Colors.A_optionsBg,self.Gdisplay,T_upstep,action=lambda x: self.runFunction(self.updateVars[0], x))
+#         # IB_DownStep = InputBox.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[1], x))
+#         # IB_RightStep = InputBox.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[2], x))
+#         # IB_LeftStep = InputBox.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[3], x))
+#         self.boxObjects = [IB_UpStep] #,IB_DownStep,IB_RightStep,IB_LeftStep]
+#         # self.h = abs(IB_LeftStep.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
+        
+#         #Reset Button
+#         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
+#         T_reset = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
+#         # B_reset = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+
+#         self.buttonObjects = []#B_reset]
+#         # self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+Other:
+
+#b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, False))
+#b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, True))
+
+# def AntStep(var, textVar, shouldIncrease, stepValue=1):
+#     var.UpdateValue(shouldIncrease,stepValue)
+#     textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
+
+#T_AntStepUp = Text.Text("1",BNFont,20,Colors.white,1+25,screenH+3-16-50,gameDisplay,True,"bottomleft")
+
+#input_box1 = InputBox.InputBox(1, 300, 50, 25,pygame.Color(255,255,255),pygame.Color(48,48,48),gameDisplay,BNFont,text="1",action=lambda x: UpdateStepVar(stepUp, x))
+
+"""
 
 
 

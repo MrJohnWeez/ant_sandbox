@@ -3,14 +3,8 @@ import pygame
 import CustomPath
 import Colors
 
-def text_objects(text, font):
-    textSurf = font.render(text,True,Colors.black)
-    return textSurf, textSurf.get_rect()
-
-
 class ButtonToggle:
-    def __init__(self, msg, x, y, w, h, normalColor, display, action=None):
-        self.msg = msg
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None):
         self.x = x
         self.y = y
         self.w = w
@@ -22,40 +16,45 @@ class ButtonToggle:
         self.normalColor = normalColor
         self.clickColor = Colors.shade(normalColor, 0.2)
         self.hoverColor = Colors.shade(normalColor, -0.2)
-
+        self.textObject = textObject
         self.prevClick = -1
         
     def ChangeMsg(self,newMsg):
-        self.msg = newMsg
+        """ Changes the text over the button """
+        self.textObject.AddText(newMsg)
+        if self.toggled:
+            self.ToggleOn(True)
+        else:
+            self.ToggleOff(True)
 
     def ToggleOn(self, ignoreFunction=False):
         self.state = 1
         self.toggled = True
-        pygame.draw.rect(self.gameDisplay, self.clickColor, (self.x,self.y,self.w,self.h))
+        self.UpdateToScreen(self.clickColor)
         if self.action != None and not ignoreFunction:
             self.action()
-        self.AddText()
 
     def ToggleOff(self, ignoreFunction=False):
         self.toggled = False
         self.state = 0
-        pygame.draw.rect(self.gameDisplay, self.normalColor, (self.x,self.y,self.w,self.h))
+        self.UpdateToScreen(self.normalColor)
         if self.action != None and not ignoreFunction:
             self.action()
-        self.AddText()
+        
 
     #Adds text to a button
-    def AddText(self):
-        smallText = pygame.font.Font(CustomPath.Path("assets\BebasNeue-Regular.ttf"),20)
-        TextSurf, TextRect = text_objects(self.msg, smallText)
-        TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
-        self.gameDisplay.blit(TextSurf, TextRect)
+    def UpdateToScreen(self, buttonColor):
+        """Draw button on screen"""
+        #Update the text object and update the whole button on the game screen
+        pygame.draw.rect(self.gameDisplay, buttonColor, (self.x,self.y,self.w,self.h))
+        self.textObject.TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
+        self.textObject.ForceBlit()
         pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
 
-    def Update(self, mouseX, mouseY):
+    def Update(self):
         #If not hovered
-        
-        mouseOver = self.x+self.w > mouseX > self.x and self.y+self.h > mouseY > self.y
+        mouse = pygame.mouse.get_pos()
+        mouseOver = self.x+self.w > mouse[0] > self.x and self.y+self.h > mouse[1] > self.y
         if mouseOver: 
             click = pygame.mouse.get_pressed()
             if self.prevClick == 1 and click[0] == 0:
