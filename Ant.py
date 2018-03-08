@@ -1,5 +1,6 @@
 class Ant:
     def __init__(self, inx, iny, inleft, intop, inwidth, inheight, infacing):
+        """Define a basic ant"""
         self.width = inwidth
         self.height = inheight
         self.left = inleft

@@ -5,12 +5,12 @@ import time
 
 """
 ToDo List:
--Fix reset button to use new type of button class
--Clean up code (2 hours)
--Comment code (1 hour)
+-Use text class in button toggle (1.5 hours)
+-Change Button pause to a button toggle (20 mins)
+-Change Ant class to update the ant given the display 
 
 
-
+202 = 250 fps
 
 """
 
@@ -73,6 +73,8 @@ AntStepVars = [stepUp,stepDown,stepRight,stepLeft]
 #Classes:
 class StepBoxes:
     def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, updateVars):
+        """Creates an interactive clickable text box that supports number scrolling when 
+        mouse wheel is moved while hovering over the box"""
         self.x = x
         self.y = y
         self.fontPath = fontPath
@@ -82,6 +84,8 @@ class StepBoxes:
         self.clearFunction = clearFunction
         self.updateVars = updateVars
         self.xBox = self.x+6
+
+        #Text lables
         T_Title = Text.Text("Ant Steps",self.fontPath,fontSize,Colors.A_white,self.x,self.y,self.Gdisplay,True,"bottomleft")
         T_UpStep = Text.Text("Up :",self.fontPath,fontSize,Colors.A_white,self.x,self.y,self.Gdisplay,True,"topright")
         T_DownStep = Text.Text("Down :",self.fontPath,fontSize,Colors.A_white,self.x,T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay,True,"topright")
@@ -89,37 +93,26 @@ class StepBoxes:
         T_LeftStep = Text.Text("Left :",self.fontPath,fontSize,Colors.A_white,self.x,T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay,True,"topright")
         self.textObjects = [T_UpStep,T_DownStep,T_RightStep,T_LeftStep,T_Title]
 
+        #Clickable input boxes
         IB_UpStep = InputBox.InputBox(self.xBox, self.y, 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[0], x))
         IB_DownStep = InputBox.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[1], x))
         IB_RightStep = InputBox.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[2], x))
         IB_LeftStep = InputBox.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,Colors.A_white,Colors.A_optionsBg,self.Gdisplay,self.fontPath,text="1",action=lambda x: self.runFunction(self.updateVars[3], x))
-
         self.boxObjects = [IB_UpStep,IB_DownStep,IB_RightStep,IB_LeftStep]
         self.h = abs(IB_LeftStep.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
         
-        # restButton = Button.Button("R", IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1],20,self.h, Colors.A_clearN, self.Gdisplay,lambda: self.clearFunction(self.updateVars,self.boxObjects))
-        # self.buttonObjects = [restButton]
-        self.buttonObjects = []
-        # self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(restButton.x+restButton.w))
+        #Reset Button
+        relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
+        T_reset = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
+        B_reset = Button.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
 
-
-def text_objects(text, font):
-    textSurf = font.render(text,True,Colors.A_black)
-    return textSurf, textSurf.get_rect()
-
-def AddText():
-    smallText = pygame.font.Font(BNFont,20)
-    TextSurf, TextRect = text_objects(self.msg, smallText)
-    TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
-    self.gameDisplay.blit(TextSurf, TextRect)
-    pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
-
-
+        self.buttonObjects = [B_reset]
+        self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
 
 
 #TextBoxes
-T_Watermark = Text.Text("By: MrJohnWeez",BNFont,16,Colors.A_white,1,screenH+3,gameDisplay,True,"bottomleft")
-T_AntCount = Text.Text("0/"+str(allowedAntNum),BNFont,20,Colors.A_white,1,screenH+3-16,gameDisplay,True,"bottomleft")
+T_Watermark = Text.Text("By: MrJohnWeez",BNFont,16,Colors.A_white,1,screenH+3,gameDisplay,True,"bottomleft",Colors.A_optionsBg)
+T_AntCount = Text.Text("0/"+str(allowedAntNum),BNFont,20,Colors.A_white,1,screenH+3-16,gameDisplay,True,"bottomleft",Colors.A_optionsBg)
 texts += [T_Watermark,T_AntCount]
 
 
@@ -127,34 +120,23 @@ texts += [T_Watermark,T_AntCount]
 def togglePause():
     global isPaused
     isPaused = not isPaused
-
-    if isPaused:
-        bPause.ChangeMsg("Play")
-    else:
-        bPause.ChangeMsg("Pause")
-
+    if isPaused: bPause.ChangeMsg("Play")
+    else: bPause.ChangeMsg("Pause")
 
 def clearSim():
+    """Clears the entire ant screen of any ants and their paths"""
     antList.clear()
     gameDisplay.fill(Colors.A_white)
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
     T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
 
-
 def speedButton():
     global userSpeed
     global startMultipler
 
-    if userSpeed < startMultipler:
-        userSpeed = int(userSpeed*2)
-    else:
-        userSpeed = 1
-
-    global b3
+    if userSpeed < startMultipler: userSpeed = int(userSpeed*2)
+    else: userSpeed = 1
     bSpeed.ChangeMsg("x"+str(startMultipler//userSpeed))
-    print("Speed: ", startMultipler//userSpeed)
-
-
 
 
 #Define Buttons
@@ -182,10 +164,12 @@ stepBoxes = [StepBox1]
 
 #Simulation Functions
 def QuitSim():
+    """Quits game"""
     pygame.quit()
     quit()
 
 def ResetSim():
+    """Make the state of the simulation new."""
     gameDisplay.fill(Colors.A_white)
     pygame.draw.rect(gameDisplay, Colors.A_optionsBg, (0,0,MenuW,MenuH))
 
@@ -210,9 +194,8 @@ def ResetSim():
     
 
 
-#Set up Simulation
+#Set up Simulation for setup
 ResetSim()
-
 
 #Main loop
 while True:

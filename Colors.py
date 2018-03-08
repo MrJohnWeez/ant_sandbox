@@ -24,15 +24,22 @@ clearN = (130, 84, 84)
 
 #convert screen color to rgb value
 def toColor(in_Color):
+    """Convert color to a single interger"""
     return (in_Color//(256*256), in_Color//256%256, in_Color%256)
 
 def shadeAlpha(inColor, shade_factor):
+    """Returns a shade given a base color with the alpha channel
+    shadeFactor: Negative = Lighter, Positive = Darker
+    """
     newR = inColor[0] * (1 - shade_factor)
     newG = inColor[1] * (1 - shade_factor)
     newB = inColor[2] * (1 - shade_factor)
     return (newR,newG,newB,inColor[3])
 
 def shade(inColor, shade_factor):
+    """Returns a shade given a base color
+    shadeFactor: Negative = Lighter, Positive = Darker
+    """
     newR = inColor[0] * (1 - shade_factor)
     newG = inColor[1] * (1 - shade_factor)
     newB = inColor[2] * (1 - shade_factor)
