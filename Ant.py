@@ -1,17 +1,20 @@
+import pygame
+import Colors
+
 class Ant:
-    def __init__(self, inx, iny, inleft, intop, inwidth, inheight, infacing):
-        """Define a basic ant"""
-        self.width = inwidth
-        self.height = inheight
-        self.left = inleft
-        self.top = intop
-        self.x = inx
-        self.y = iny
-        self.facing = infacing # 0 = up, 1 = right, 2 = down, 3 = left
-        self.stepUp = 1
-        self.stepDown = 1
-        self.stepLeft = 1
-        self.stepRight = 1
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+        """Define a basic ant. Moves by step when on black"""
+        self.box = box
+        self.x = x
+        self.y = y
+        self.facing = facing # 0 = up, 1 = right, 2 = down, 3 = left
+        self.stepUp = step[0]
+        self.stepDown = step[1]
+        self.stepLeft = step[2]
+        self.stepRight = step[3]
+        self.display = display
+        display.set_at((self.x,self.y), Colors.A_black)
+        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
     def __get_x(self):
@@ -25,10 +28,10 @@ class Ant:
 
 
     def __set_x(self, x):
-        if(x > self.width-1):
-            x = self.left + (x-self.width)
-        if(x < self.left):
-            x = self.width-1 - (self.left - x-1)
+        if(x > self.box.w-1):
+            x = self.box.x + (x-self.box.w)
+        if(x < self.box.x):
+            x = self.box.w-1 - (self.box.x - x-1)
         self.__x = x
 
     x = property(__get_x, __set_x)
@@ -38,16 +41,16 @@ class Ant:
 
 
     def __set_y(self, y):
-        if(y > self.height-1):
-            y = self.top + (y-self.height)
-        if(y < self.top):
-            y = self.height-1 - (self.top - y-1)
+        if(y > self.box.h-1):
+            y = self.box.y + (y-self.box.h)
+        if(y < self.box.y):
+            y = self.box.h-1 - (self.box.y - y-1)
         self.__y = y
 
     y = property(__get_y, __set_y)
 
 
-    def move_black(self):
+    def move_main(self):
         if self.facing == 0:
             self.facing = 3
             self.x -= self.stepLeft
@@ -61,7 +64,7 @@ class Ant:
             self.facing = 2
             self.y += self.stepDown
 
-    def move_white(self):
+    def move_basic(self):
         if self.facing == 0:
             self.facing = 1
             self.x += 1
@@ -74,3 +77,37 @@ class Ant:
         elif self.facing == 3:
             self.facing = 0
             self.y -= 1
+    def move_skip(self):
+        if self.facing == 0: self.x += 1
+        elif self.facing == 1: self.y += 1
+        elif self.facing == 2: self.x -= 1
+        elif self.facing == 3: self.y -= 1
+
+    def Update(self):
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_black:
+            # set current tile to white
+            self.display.set_at((self.x,self.y), Colors.A_white)
+            # turn left and move
+            self.move_main()
+
+        elif pix == Colors.A_white or pix == Colors.A_blue:
+            # set current tile to white
+            self.display.set_at((self.x,self.y), Colors.A_black)
+            # turn right and move
+            self.move_basic()
+
+
+class AntFriendly(Ant):
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+        super().__init__(x, y, box, facing, display, step)
+
+    def Update(self):
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_white:
+            # set current tile to white
+            self.display.set_at((self.x,self.y), Colors.A_blue)
+            # turn left and move
+            self.move_main()
+        else:
+            self.move_skip()

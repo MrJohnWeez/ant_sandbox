@@ -21,8 +21,8 @@ class ButtonBase:
         self.textObject = textObject
 
         self.normalColor = normalColor
-        self.clickColor = Colors.shadeAlpha(normalColor, 0.2)
-        self.hoverColor = Colors.shade(normalColor, -0.2)
+        self.clickColor = Colors.shadeAlpha(normalColor, -0.2)
+        self.hoverColor = Colors.shade(normalColor, 0.1)
 
     def ChangeMsg(self,newMsg):
         """ Changes the text over the button """
@@ -160,17 +160,16 @@ class ButtonToggle(ButtonBase):
 class InputBox:
     """Creates an input box that allows the user to enter any text and if they text is a number they are
         able to scroll with the mouse wheel"""
-    def __init__(self, x, y, w, h, boxColor, bgColor, display, textObject, action=None):
-        print(boxColor)
+    def __init__(self, x, y, w, h, boxColor, bgColor, display, textObject, action=None, boarderSize=2):
         self.textObject = textObject
         self.rect = pygame.Rect(x, y, w, h)
         self.boxColorN = boxColor
-        self.boxColorA = Colors.shadeAlpha(boxColor, 0.5)
+        self.boxColorA = Colors.shadeAlpha(boxColor, -0.5)
         self.color = boxColor
         self.bgColor = bgColor
         self.active = False
         self.display = display
-        self.boarderSize = 2
+        self.boarderSize = boarderSize
         self.action = action
 
     def handle_event(self, event):

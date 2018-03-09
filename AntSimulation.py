@@ -1,28 +1,24 @@
-
-import pygame
 import time
-
+import pygame
 
 """
 ToDo List:
--Change Color Shading values in classes
--Change Ant class to update the ant given the display 
-
-
+-Make an ant that is friendly. Will not overwirte any color but white. Tail is blue
+-Fix friendly ant from overriding the black ant's trail
 202 = 250 fps
-
 """
 
 #Custom
 import Ant
+import AntStepVar
 import Colors
 import CustomPath
-import Text
-import AntStepVar
 import Interactive
+import Text
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
+
 #Define Screen
 screenH = 600
 screenW = 800
@@ -62,9 +58,7 @@ stepUp = AntStepVar.AntStepVar(0,screenH)
 stepDown = AntStepVar.AntStepVar(0,screenH)
 stepRight = AntStepVar.AntStepVar(0,screenH)
 stepLeft = AntStepVar.AntStepVar(0,screenH)
-
 AntStepVars = [stepUp,stepDown,stepRight,stepLeft]
-
 
 
 #Classes:
@@ -81,11 +75,13 @@ class StepBoxes:
         self.updateVars = updateVars
         self.xBox = self.x+6
 
+        #Colors
         labelColor = Colors.A_white
         titleColor = Colors.A_white
         boxColor = Colors.A_white
         boxTextColor = Colors.A_white
         menuBG = Colors.A_optionsBg
+
         #Text lables
         T_Title = Text.Text("Ant Steps",self.fontPath,fontSize,titleColor,self.x,self.y,self.Gdisplay,True,"bottomleft")
         T_UpStep = Text.Text("Up :",self.fontPath,fontSize,labelColor,self.x,self.y,self.Gdisplay,True,"topright")
@@ -101,10 +97,10 @@ class StepBoxes:
         T_leftStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay)
 
         #Clickable input boxes
-        IB_UpStep = Interactive.InputBox(self.xBox, self.y, 50, fontSize,boxColor,menuBG,self.Gdisplay,T_upStep,lambda x: self.runFunction(self.updateVars[0], x))
-        IB_DownStep = Interactive.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_downStep,lambda x: self.runFunction(self.updateVars[1], x))
-        IB_RightStep = Interactive.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_rightStep,lambda x: self.runFunction(self.updateVars[2], x))
-        IB_LeftStep = Interactive.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_leftStep,lambda x: self.runFunction(self.updateVars[3], x))
+        IB_UpStep = Interactive.InputBox(self.xBox, self.y, 50, fontSize,boxColor,menuBG,self.Gdisplay,T_upStep,lambda x: self.runFunction(self.updateVars[0], x),1)
+        IB_DownStep = Interactive.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_downStep,lambda x: self.runFunction(self.updateVars[1], x),1)
+        IB_RightStep = Interactive.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_rightStep,lambda x: self.runFunction(self.updateVars[2], x),1)
+        IB_LeftStep = Interactive.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_leftStep,lambda x: self.runFunction(self.updateVars[3], x),1)
         self.boxObjects = [IB_UpStep,IB_DownStep,IB_RightStep,IB_LeftStep]
         self.h = abs(IB_LeftStep.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
         
@@ -127,8 +123,7 @@ texts += [T_Watermark,T_AntCount]
 def togglePause():
     global isPaused
     isPaused = not isPaused
-    if isPaused: bPause.ChangeMsg("Play")
-    else: bPause.ChangeMsg("Pause")
+    bPause.ChangeMsg("Play") if isPaused else bPause.ChangeMsg("Pause")
 
 def clearSim():
     """Clears the entire ant screen of any ants and their paths"""
@@ -234,23 +229,20 @@ while True:
         
         #Left Click Spwn an ant
         elif not mouseOverMenu and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1 and len(antList) < allowedAntNum:
-            gameDisplay.set_at((mouse[0],mouse[1]), Colors.A_black)
-            pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
-
-            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
+            newStep = (stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
+            tempAnt = Ant.AntFriendly((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)            
             antList.append(tempAnt)
             T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
 
         #Hold down right click to spawn ants
         elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn and len(antList) < allowedAntNum:
+            #Reset Cooldown
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
-            gameDisplay.set_at((mouse[0],mouse[1]), Colors.A_black)
-            pygame.display.update(pygame.Rect(mouse[0],mouse[1],1,1))
 
-            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),MenuW,0,screenW,screenH,0)
-            tempAnt.ChangeStep(stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
+            newStep = (stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
+            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep) 
+
             antList.append(tempAnt)
 
             T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
@@ -267,27 +259,12 @@ while True:
                 print(clock.get_fps())
 
     r.clear()
+    # Move every ant if not paused
     if not isPaused:
-        # Move every ant
         for ant in antList:
-            #pix = parray[ant.x][ant.y]
-            pix = gameDisplay.get_at((ant.x,ant.y))
-            pix = (pix[0],pix[1],pix[2])
-            if pix == Colors.black:
-                # set current tile to white
-                gameDisplay.set_at((ant.x,ant.y), Colors.A_white)
-                # turn left and move
-                ant.move_black()
-
-            elif pix == Colors.white:
-                # set current tile to white
-                gameDisplay.set_at((ant.x,ant.y), Colors.A_black)
-                # turn right and move
-                ant.move_white()
-            
+            ant.Update()
             r.append(pygame.Rect(ant.x,ant.y,1,1)) # add pixel to render
     
-
     pygame.display.update(r)    #Update ants on screen only
     clock.tick(baseSpeed//userSpeed)    #Control the framerate of the simulation (Simulation speed)
 
