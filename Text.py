@@ -32,7 +32,7 @@ class Text:
         """changes and updates the text object"""
         if newText != None:
             # Make text rect same length as before to clear old text out
-            tempstr = " "
+            tempstr = ""
             if len(newText) < self.prevTextLength:
                 factor = self.prevTextLength - len(newText)
                 tempstr = tempstr * factor * 3
