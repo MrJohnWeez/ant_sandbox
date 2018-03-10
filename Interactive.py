@@ -35,14 +35,43 @@ class ButtonBase:
         self.textObject.TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
         self.textObject.ForceBlit()
         pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
+    def AutoFont(self):
+        self.textObject.size = self.h
+        self.textObject.AddText(forceUpdate=True)
+        while self.textObject.GetWidth() > self.w:
+            self.textObject.size -= 1
+            self.textObject.AddText(forceUpdate=True)
 
+    def getX(self):
+        return self.x
+    def getY(self):
+        return self.y
+    def getW(self):
+        return self.w
+    def getH(self):
+        return self.h
+    def getTopLeft(self):
+        """Returns top left cornner cordinate"""
+        return (self.getX(), self.getY())
+    def getTopRight(self):
+        """Returns top right cornner cordinate"""
+        return (self.getX()+self.getW(), self.getY())
+    def getBottomLeft(self):
+        """Returns bottom left cornner cordinate"""
+        return (self.getX(), self.getY()+self.getH())
+    def getBottomRight(self):
+        """Returns bottom right cornner cordinate"""
+        return (self.getX()+self.getW(), self.getY()+self.getH())
 
 ######################################################################################################################################################################
 
 class Button(ButtonBase):
     """Creates a button object that can be clicked"""
-    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None):
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, autoFontSize=False):
         super().__init__(x, y, w, h, normalColor, display, textObject, action)
+        if autoFontSize:
+            self.AutoFont()
+        
         self.state = 1
         
     def Update(self, newMsg=None):
@@ -81,6 +110,7 @@ class Button(ButtonBase):
     def DrawButton(self):
         """ Draws button on command"""
         self.Update()
+    
     
 
 ######################################################################################################################################################################

@@ -4,6 +4,7 @@ import random
 
 class Ant:
     updateArray = []
+    antArray = []
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
         """Define a basic ant. Moves by step when on black"""
         self.box = box
@@ -15,22 +16,41 @@ class Ant:
         self.stepLeft = step[2]
         self.stepRight = step[3]
         self.display = display
+        self.TempScreenColor = self.display.get_at((self.x,self.y))
+        self.isAlive = True
         
     @classmethod
-    def GetUpdates(cls):
-        """Returns all the rects that ants have updated on screen. Used for screen update optimization"""
-        return cls.updateArray
+    def GetRectUpdates(cls):
+        """Returns all the rects that ants have updated on screen and clears update array. Used for screen update optimization"""
+        temp = []
+        temp += cls.updateArray
+        cls.updateArray.clear()
+        return temp
+
 
     @classmethod
-    def ClearUpdates(cls):
-        """Clears all ant update screen rects. See GetUpdates() for more info"""
-        cls.updateArray.clear()
+    def UpdateAllAnts(cls):
+        """Move all ants on screen"""
+        temp = []
+        temp += cls.antArray
+        cls.antArray.clear()
+        for a in temp:
+            a.Update()
+    @classmethod
+    def GetAntCount(cls):
+        return len(cls.antArray)
 
+    @classmethod
+    def KillAllAnts(cls):
+        cls.antArray.clear()
+        
 
     def Spawn(self):
+        Ant.antArray.append(self)
         self.display.set_at((self.x,self.y), Colors.A_black)
         
         pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        
 
     def __get_x(self):
         return self.__x
@@ -79,6 +99,20 @@ class Ant:
             self.facing = 2
             self.y += self.stepDown
 
+    def move_mainO(self):
+        if self.facing == 0:
+            self.facing = 1
+            self.x += self.stepLeft
+        elif self.facing == 1:
+            self.facing = 2
+            self.y += self.stepUp
+        elif self.facing == 2:
+            self.facing = 3
+            self.x -= self.stepRight
+        elif self.facing == 3:
+            self.facing = 0
+            self.y -= self.stepDown
+
     def move_basic(self):
         if self.facing == 0:
             self.facing = 1
@@ -95,6 +129,7 @@ class Ant:
     
 
     def Update(self):
+        Ant.antArray.append(self)
         pix = self.display.get_at((self.x,self.y))
         if pix == Colors.A_black:
             # set current tile to white
@@ -108,7 +143,19 @@ class Ant:
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.set_at((self.x,self.y), Colors.A_black)
             # turn right and move
-            self.move_basic()
+            self.move_mainO()
+    def ShowAnt(self, ShouldShow):
+        if ShouldShow:
+            self.TempScreenColor = self.display.get_at((self.x,self.y))
+            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+            self.display.fill(Colors.A_red, ((self.x,self.y), (1,1)))
+        else:
+            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+            self.display.fill(self.TempScreenColor, ((self.x,self.y), (1,1)))
+
+
+
+
 
 
 class AntFriendly(Ant):
@@ -124,6 +171,7 @@ class AntFriendly(Ant):
 
 
     def Update(self):
+        Ant.antArray.append(self)
         pix = self.display.get_at((self.x,self.y))
         if pix == Colors.A_white:
             # set current tile to white
@@ -131,11 +179,12 @@ class AntFriendly(Ant):
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.fill(Colors.A_blue, ((self.x,self.y), (1,1)))
             # turn left and move
-            self.move_basic()
+            self.move_main()
         else:
             self.move_random()
 
     def Spawn(self):
+        Ant.antArray.append(self)
         self.display.set_at((self.x,self.y), Colors.A_blue)
         pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 

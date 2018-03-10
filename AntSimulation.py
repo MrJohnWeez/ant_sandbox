@@ -1,11 +1,10 @@
 import time
 import pygame
-
+import random
 """
 ToDo List:
--Make toggle bar class item for different ant selection (3 hours)
--Make antstep random button (30 mins)
-202 = 250 fps
+-Make fire ant
+202 noraml ants ~= 500 fps
 """
 
 #Custom
@@ -15,6 +14,24 @@ import Colors
 import CustomPath
 import Interactive
 import Text
+#Globals
+global BNFont
+global screenH
+global screenW
+global MenuX
+global MenuY
+global MenuW
+global MenuH
+global gameDisplay
+global toolType
+global stepUp
+global stepDown
+global stepLeft
+global stepRight
+global allowedAntNum
+global T_AntCount
+global mouse
+
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
@@ -39,13 +56,13 @@ spawn_Event  = pygame.USEREVENT + 1
 coolDown = 0
 
 #Simulation Vars
-antList = []
 isPaused = False
 r = [] #Pixels to render list
 allowedAntNum = 500
 input_boxes = []
 buttons = []
 texts = []
+toolType = "Ant"
 
 #Simulation speed vars
 startMultipler = 512     #Must be a number 2^
@@ -60,11 +77,12 @@ stepRight = AntStepVar.AntStepVar(0,screenH)
 stepLeft = AntStepVar.AntStepVar(0,screenH)
 AntStepVars = [stepUp,stepDown,stepRight,stepLeft]
 
+def clamp(n, smallest, largest): return max(smallest, min(n, largest))
 
 #Classes:
 class StepBoxes:
-    """Creates a set of interactive text boxes that executes functions based on given args. NOT A DEP CLASS!"""
-    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, updateVars):
+    """Creates a set of interactive text boxes that executes functions based on given args. NOT A DEPENDENT CLASS!"""
+    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, randomFunction, updateVars):
         self.x = x
         self.y = y
         self.fontPath = fontPath
@@ -74,6 +92,7 @@ class StepBoxes:
         self.clearFunction = clearFunction
         self.updateVars = updateVars
         self.xBox = self.x+6
+        self.randomFunction = randomFunction
 
         #Colors
         labelColor = Colors.A_white
@@ -106,11 +125,15 @@ class StepBoxes:
         
         #Reset Button
         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
-        T_reset = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
-        B_reset = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+        T_random = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
+        B_random = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_random, lambda: self.randomFunction(self.updateVars,self.boxObjects))
+        T_reset = Text.Text("C",BNFont,20,Colors.A_black,B_random.getTopRight()[0],relY,self.Gdisplay)
+        B_reset = Interactive.Button(B_random.getTopRight()[0]+5,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
 
-        self.buttonObjects = [B_reset]
+        self.buttonObjects = [B_reset,B_random]
         self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
+
+
 
 
 #TextBoxes
@@ -127,10 +150,10 @@ def togglePause():
 
 def clearSim():
     """Clears the entire ant screen of any ants and their paths"""
-    antList.clear()
+    Ant.Ant.KillAllAnts()
     pygame.draw.rect(gameDisplay, Colors.A_white, pygame.Rect(MenuW,0,screenW,screenH))
     pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
-    T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
+    T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum),True)
 
 def speedButton():
     global userSpeed
@@ -139,6 +162,7 @@ def speedButton():
     if userSpeed < startMultipler: userSpeed = int(userSpeed*2)
     else: userSpeed = 1
     bSpeed.ChangeMsg("x"+str(startMultipler//userSpeed))
+
 
 
 #Define Buttons
@@ -151,6 +175,46 @@ bSpeed = Interactive.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay
 buttons += [bClear,bPause,bSpeed]
 
 
+
+
+
+def PlaceTool():
+    newStep = (stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
+    def HelperAdd():
+        tempAnt.Spawn()         
+        T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum),True)
+
+    
+    if toolType == "Ant":
+        tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        HelperAdd()
+    elif toolType == "FriendlyAnt":
+        tempAnt = Ant.AntFriendly((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        HelperAdd()
+    elif toolType == "Fill":
+        cubeSize = 15
+        x = mouse[0] - cubeSize
+        y = mouse[1] - cubeSize
+        x = clamp(x,MenuW,screenW)
+        y = clamp(y,0,screenH)
+        gameDisplay.fill(Colors.A_white, ((x,y), (cubeSize*2,cubeSize*2)))
+        pygame.display.update((x,y), (cubeSize*2,cubeSize*2))
+        
+    
+        
+def ChangeToolType(newToolType):
+    global toolType
+    toolType = newToolType
+
+T_Ant = Text.Text("Ant",BNFont,20,Colors.A_black,1,200,gameDisplay)
+bAnt = Interactive.Button(1,200,60,20, Colors.A_clearN, gameDisplay, T_Ant, lambda: ChangeToolType("Ant"), True)
+T_AntFriendly = Text.Text("Friendly",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
+bAntFirendly = Interactive.Button(1,bAnt.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntFriendly, lambda: ChangeToolType("FriendlyAnt"), True)
+T_FillWhite= Text.Text("Paint",BNFont,20,Colors.A_black,1,bAntFirendly.getBottomLeft()[1]+5,gameDisplay)
+bFillWhite = Interactive.Button(1,bAntFirendly.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_FillWhite, lambda: ChangeToolType("Fill"), True)
+buttons += [bAnt,bAntFirendly,bFillWhite]
+
+
 def UpdateStepVar(var, textBox):
     var.UpdateByString(textBox.getText())
     textBox.updateText(str(var.GetValue()))
@@ -160,8 +224,14 @@ def ResetStepVars(varList, boxVars):
         varList[i].Reset()
         boxVars[i].updateText(str(varList[i].GetValue()))
 
+def RandomStepVars(varList, boxVars):
+    for i in range(len(varList)):
+        r = random.randint(0,screenH)
+        varList[i].SetValue(r)
+        boxVars[i].updateText(str(varList[i].GetValue()))
+    
 #Ant step boxes module
-StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, AntStepVars)
+StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, AntStepVars)
 stepBoxes = [StepBox1]
 
 #Simulation Functions
@@ -190,7 +260,7 @@ def ResetSim():
             B.update()
         for Bn in sbox.buttonObjects:
             Bn.DrawButton()
-    antList.clear()
+    Ant.Ant.KillAllAnts()
     pygame.display.update()
     
 
@@ -229,15 +299,11 @@ while True:
             pygame.time.set_timer(spawn_Event, 0)
         
         #Left Click Spwn an ant
-        elif not mouseOverMenu and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1 and len(antList) < allowedAntNum:
-            newStep = (stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
-            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)   
-            tempAnt.Spawn()         
-            antList.append(tempAnt)
-            T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
+        elif not mouseOverMenu and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1 and Ant.Ant.GetAntCount() < allowedAntNum:
+            PlaceTool()
 
         #Hold down right click to spawn ants
-        elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn and len(antList) < allowedAntNum:
+        elif not mouseOverMenu and pygame.mouse.get_pressed()[2] == 1 and Spawn and Ant.Ant.GetAntCount() < allowedAntNum:
             #Reset Cooldown
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
@@ -245,12 +311,7 @@ while True:
             # gameDisplay.fill(Colors.A_black, ((mouse[0],mouse[1]), (50,50)))
             # pygame.display.update()
 
-            newStep = (stepUp.GetValue(),stepDown.GetValue(),stepLeft.GetValue(),stepRight.GetValue())
-            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep) 
-            tempAnt.Spawn()   
-            antList.append(tempAnt)
-
-            T_AntCount.AddText(str(len(antList))+"/"+str(allowedAntNum),True)
+            PlaceTool()
 
 
         #Press 'C' to clear ants and screen
@@ -260,16 +321,14 @@ while True:
                 togglePause()
                 bPause.ForceUpdate(isPaused)
             if event.key == pygame.K_z:
-                #print(len(antList))
+                #print(Ant.Ant.GetAntCount())
                 print(clock.get_fps())
 
     # Move every ant if not paused
     if not isPaused:
-        for ant in antList:
-            ant.Update()
+        Ant.Ant.UpdateAllAnts()
+        pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
         
-    pygame.display.update(Ant.Ant.GetUpdates())    #Update ants on screen only
-    Ant.Ant.ClearUpdates()
     clock.tick(baseSpeed//userSpeed)    #Control the framerate of the simulation (Simulation speed)
 
 
