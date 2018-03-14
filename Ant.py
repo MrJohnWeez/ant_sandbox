@@ -38,14 +38,17 @@ class Ant:
             a.Update()
     @classmethod
     def GetAntCount(cls):
+        """Returns the number of ants that are alive"""
         return len(cls.antArray)
 
     @classmethod
     def KillAllAnts(cls):
+        """Kills all living ants"""
         cls.antArray.clear()
         
 
     def Spawn(self):
+        """Places a black pixel where a normal ant would spawn"""
         Ant.antArray.append(self)
         self.display.set_at((self.x,self.y), Colors.A_black)
         
@@ -56,6 +59,7 @@ class Ant:
         return self.__x
 
     def ChangeStep(self, up=1, down=1, left=1, right=1):
+        """Changes the varibles for the ant steps"""
         self.stepUp = up
         self.stepDown = down
         self.stepLeft = left
@@ -85,7 +89,9 @@ class Ant:
     y = property(__get_y, __set_y)
 
 
-    def move_main(self):
+    #Ant Move Functions
+    def MoveLeftStep(self):
+        """Ant turns left and moves its current step that direction"""
         if self.facing == 0:
             self.facing = 3
             self.x -= self.stepLeft
@@ -99,7 +105,8 @@ class Ant:
             self.facing = 2
             self.y += self.stepDown
 
-    def move_mainO(self):
+    def MoveRightStep(self):
+        """Ant turns right and moves its current step that direction"""
         if self.facing == 0:
             self.facing = 1
             self.x += self.stepLeft
@@ -113,7 +120,8 @@ class Ant:
             self.facing = 0
             self.y -= self.stepDown
 
-    def move_basic(self):
+    def MoveBasicRight(self):
+        """Ant turns Right but only moves one space"""
         if self.facing == 0:
             self.facing = 1
             self.x += 1
@@ -126,9 +134,45 @@ class Ant:
         elif self.facing == 3:
             self.facing = 0
             self.y -= 1
-    
+
+    def MoveCurrentSpace(self):
+        """Moves one space in the current ant direction facing"""
+        if self.facing == 0:
+            self.y -= 1
+        elif self.facing == 1:
+            self.x += 1
+        elif self.facing == 2:
+            self.y += 1
+        elif self.facing == 3:
+            self.x -= 1
+
+    def MoveRandom(self):
+        """Ant will move a random direction by one space"""
+        r = random.randint(0,3)
+        if r == 0: self.x += 1
+        elif r == 1: self.y += 1
+        elif r == 2: self.x -= 1
+        elif r == 3: self.y -= 1
+
+    def Move180(self):
+        """Ant turns 180 degrees and moves one step"""
+        if self.facing == 0:
+            self.facing = 1
+            self.x -= self.stepLeft
+        elif self.facing == 1:
+            self.facing = 2
+            self.y -= self.stepUp
+        elif self.facing == 2:
+            self.facing = 3
+            self.x += self.stepRight
+        elif self.facing == 3:
+            self.facing = 0
+            self.y += self.stepDown
+
+
 
     def Update(self):
+        """A normal black ant path"""
         Ant.antArray.append(self)
         pix = self.display.get_at((self.x,self.y))
         if pix == Colors.A_black:
@@ -136,15 +180,17 @@ class Ant:
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.set_at((self.x,self.y), Colors.A_white)
             # turn left and move
-            self.move_main()
+            self.MoveLeftStep()
 
         elif pix == Colors.A_white or pix == Colors.A_blue:
             # set current tile to white
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.set_at((self.x,self.y), Colors.A_black)
             # turn right and move
-            self.move_mainO()
+            self.MoveRightStep()
+
     def ShowAnt(self, ShouldShow):
+        """Toggles the ant to show its position with a color"""
         if ShouldShow:
             self.TempScreenColor = self.display.get_at((self.x,self.y))
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
@@ -158,16 +204,37 @@ class Ant:
 
 
 
-class AntFriendly(Ant):
+
+#####################################################################################################################################################################
+class AntWater(Ant):
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
         super().__init__(x, y, box, facing, display, step)
 
-    def move_random(self):
-        r = random.randint(0,3)
-        if r == 0: self.x += 1
-        elif r == 1: self.y += 1
-        elif r == 2: self.x -= 1
-        elif r == 3: self.y -= 1
+    def Update(self):
+        """Moves in a random direction if not on a white square"""
+        Ant.antArray.append(self)
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_white:
+            # set current tile to white
+            # self.display.set_at((self.x,self.y), Colors.A_blue)
+            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+            self.display.fill(Colors.A_blue, ((self.x,self.y), (1,1)))
+            # turn left and move
+            self.MoveLeftStep()
+        else:
+            self.MoveRandom()
+
+    def Spawn(self):
+        """Spawns ant in game and turns the current mouse pos to color of ant"""
+        Ant.antArray.append(self)
+        self.display.set_at((self.x,self.y), Colors.A_blue)
+        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+
+#####################################################################################################################################################################
+class AntWood(Ant):
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+        super().__init__(x, y, box, facing, display, step)
+        self.shouldMove = False
 
 
     def Update(self):
@@ -177,18 +244,116 @@ class AntFriendly(Ant):
             # set current tile to white
             # self.display.set_at((self.x,self.y), Colors.A_blue)
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.fill(Colors.A_blue, ((self.x,self.y), (1,1)))
+            self.display.fill(Colors.A_Wood, ((self.x,self.y), (1,1)))
             # turn left and move
-            self.move_main()
+            self.MoveRightStep()
         else:
-            self.move_random()
+            self.MoveRandom()
 
     def Spawn(self):
+        """Spawns ant in game and turns the current mouse pos to color of ant"""
         Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_blue)
+        self.display.set_at((self.x,self.y), Colors.A_Wood)
+        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+
+#####################################################################################################################################################################
+class AntFire(Ant):
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+        super().__init__(x, y, box, facing, display, step)
+        self.shouldMove = False
+
+
+
+    def Update(self):
+        Ant.antArray.append(self)
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_white:
+            # set current tile to white
+            # self.display.set_at((self.x,self.y), Colors.A_blue)
+            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+            self.display.fill(Colors.A_Fire, ((self.x,self.y), (1,1)))
+            # turn left and move
+            self.MoveRightStep()
+        else:
+            self.MoveRandom()
+
+    def Spawn(self):
+        """Spawns ant in game and turns the current mouse pos to color of ant"""
+        Ant.antArray.append(self)
+        self.display.set_at((self.x,self.y), Colors.A_Fire)
         pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
+#####################################################################################################################################################################
+class AntPlant(Ant):
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+        super().__init__(x, y, box, facing, display, step)
+        self.shouldMove = False
+
+    def Grow(self):
+        """Ant will only stay on connected blue areas and will turn blue to green"""
+        oldx = self.x
+        oldy = self.y
+        randBlue = []
+        randGreen = []
+
+        self.x += 1
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_blue:
+            randBlue.append(1)
+        elif pix == Colors.A_green:
+            randGreen.append(1)
+        self.x = oldx
+
+        self.x -= 1
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_blue:
+            randBlue.append(3)
+        elif pix == Colors.A_green:
+            randGreen.append(3)
+        self.x = oldx
+
+        self.y += 1
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_blue:
+            randBlue.append(2)
+        elif pix == Colors.A_green:
+            randGreen.append(2)
+        self.y = oldy
+    
+        self.y -= 1
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_blue:
+            randBlue.append(0)
+        elif pix == Colors.A_green:
+            randGreen.append(0)
+        self.y = oldy
+        
+        if len(randBlue) != 0:
+            r = random.randint(0,len(randBlue)-1)
+            self.facing = randBlue[r]
+            self.MoveCurrentSpace()
+        elif len(randGreen) != 0:
+            r = random.randint(0,len(randGreen)-1)
+            self.facing = randGreen[r]
+            self.MoveCurrentSpace()
+
+
+    def Update(self):
+        """Turns blue pixels to green and fills any connected blue squares to green"""
+        Ant.antArray.append(self)
+        pix = self.display.get_at((self.x,self.y))
+        if pix == Colors.A_blue:
+            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+            self.display.fill(Colors.A_green, ((self.x,self.y), (1,1)))
+        self.Grow()
+
+
+    def Spawn(self):
+        """Spawns ant in game and turns the current mouse pos to color of ant"""
+        Ant.antArray.append(self)
+        self.display.set_at((self.x,self.y), Colors.A_green)
+        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
 

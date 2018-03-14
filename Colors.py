@@ -6,6 +6,8 @@ A_black = (0,0,0,255)
 A_red = (255,0,0,255)
 A_green = (0,255,0,255)
 A_blue = (0,0,255,255)
+A_Fire = (237, 48, 15) #Orange Red
+A_Wood = (119, 77, 0) #Brown
 
 A_optionsBg = (48, 48, 48,255)
 A_clearA = (170, 100, 100,255)

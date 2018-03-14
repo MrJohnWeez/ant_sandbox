@@ -3,7 +3,7 @@ import pygame
 import random
 """
 ToDo List:
--Make fire ant
+-Make fire ant (Should grow in a circle in open areas, wood plant ant should die if it touches its path)
 202 noraml ants ~= 500 fps
 """
 
@@ -188,8 +188,17 @@ def PlaceTool():
     if toolType == "Ant":
         tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
         HelperAdd()
-    elif toolType == "FriendlyAnt":
-        tempAnt = Ant.AntFriendly((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+    elif toolType == "WaterAnt":
+        tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        HelperAdd()
+    elif toolType == "WoodAnt":
+        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        HelperAdd()
+    elif toolType == "FireAnt":
+        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        HelperAdd()
+    elif toolType == "PlantAnt":
+        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
         HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
@@ -208,11 +217,17 @@ def ChangeToolType(newToolType):
 
 T_Ant = Text.Text("Ant",BNFont,20,Colors.A_black,1,200,gameDisplay)
 bAnt = Interactive.Button(1,200,60,20, Colors.A_clearN, gameDisplay, T_Ant, lambda: ChangeToolType("Ant"), True)
-T_AntFriendly = Text.Text("Friendly",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
-bAntFirendly = Interactive.Button(1,bAnt.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntFriendly, lambda: ChangeToolType("FriendlyAnt"), True)
-T_FillWhite= Text.Text("Paint",BNFont,20,Colors.A_black,1,bAntFirendly.getBottomLeft()[1]+5,gameDisplay)
-bFillWhite = Interactive.Button(1,bAntFirendly.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_FillWhite, lambda: ChangeToolType("Fill"), True)
-buttons += [bAnt,bAntFirendly,bFillWhite]
+T_AntWater = Text.Text("Water",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
+bAntWater = Interactive.Button(1,bAnt.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWater, lambda: ChangeToolType("WaterAnt"), True)
+T_FillWhite= Text.Text("Clear Path",BNFont,20,Colors.A_black,1,bAntWater.getBottomLeft()[1]+5,gameDisplay)
+bFillWhite = Interactive.Button(1,bAntWater.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_FillWhite, lambda: ChangeToolType("Fill"), True)
+T_AntWood = Text.Text("Wood",BNFont,20,Colors.A_black,1,bFillWhite.getBottomLeft()[1]+5,gameDisplay)
+bAntWood = Interactive.Button(1,bFillWhite.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWood, lambda: ChangeToolType("WoodAnt"), True)
+T_AntFire = Text.Text("Fire",BNFont,20,Colors.A_black,1,bAntWood.getBottomLeft()[1]+5,gameDisplay)
+bAntFire = Interactive.Button(1,bAntWood.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntFire, lambda: ChangeToolType("FireAnt"), True)
+T_AntPlant = Text.Text("Plant",BNFont,20,Colors.A_black,1,bAntFire.getBottomLeft()[1]+5,gameDisplay)
+bAntPlant = Interactive.Button(1,bAntFire.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntPlant, lambda: ChangeToolType("PlantAnt"), True)
+buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant]
 
 
 def UpdateStepVar(var, textBox):
