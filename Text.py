@@ -88,6 +88,8 @@ class Text:
     def GetRect(self):
         """Returns whole rect of text object"""
         return self.TextRect
+    def GetText(self):
+        return self.text
 
 
 

@@ -3,7 +3,7 @@ import pygame
 import random
 """
 ToDo List:
--Make fire ant (Should grow in a circle in open areas, wood plant ant should die if it touches its path)
+-Make a speed box for all ants. Controls how fast the ants can move
 202 noraml ants ~= 500 fps
 """
 
@@ -322,10 +322,6 @@ while True:
             #Reset Cooldown
             Spawn = False
             pygame.time.set_timer(spawn_Event, SpawnRate)
-            # #Used for drawing a block on screen
-            # gameDisplay.fill(Colors.A_black, ((mouse[0],mouse[1]), (50,50)))
-            # pygame.display.update()
-
             PlaceTool()
 
 
@@ -342,6 +338,11 @@ while True:
     # Move every ant if not paused
     if not isPaused:
         Ant.Ant.UpdateAllAnts()
+
+        #Update ant count if ants die
+        if T_AntCount.GetText() != str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum):
+            T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum),True)
+            
         pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
         
     clock.tick(baseSpeed//userSpeed)    #Control the framerate of the simulation (Simulation speed)
