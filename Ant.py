@@ -5,7 +5,7 @@ import random
 class Ant:
     updateArray = []
     antArray = []
-    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
         """Define a basic ant. Moves by step when on black"""
         self.box = box
         self.x = x
@@ -18,6 +18,8 @@ class Ant:
         self.display = display
         self.TempScreenColor = self.display.get_at((self.x,self.y))
         self.isAlive = True
+        self.speed = speed
+        self.currSpeed = 0
         
     @classmethod
     def GetRectUpdates(cls):
@@ -173,24 +175,27 @@ class Ant:
 
     def Update(self):
         """A normal black ant path"""
+        self.currSpeed += 1
         if self.isAlive:
-            Ant.antArray.append(self)
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_black:
-            # set current tile to white
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.set_at((self.x,self.y), Colors.A_white)
-            # turn left and move
-            self.MoveLeftStep()
+             Ant.antArray.append(self)
+        if self.currSpeed >= self.speed:
+            self.currSpeed = 0
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_black:
+                # set current tile to white
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.set_at((self.x,self.y), Colors.A_white)
+                # turn left and move
+                self.MoveLeftStep()
 
-        elif pix == Colors.A_white or pix == Colors.A_blue:
-            # set current tile to white
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.set_at((self.x,self.y), Colors.A_black)
-            # turn right and move
-            self.MoveRightStep()
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
+            elif pix == Colors.A_white or pix == Colors.A_blue:
+                # set current tile to white
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.set_at((self.x,self.y), Colors.A_black)
+                # turn right and move
+                self.MoveRightStep()
+            elif pix == Colors.A_Fire:
+                self.isAlive = False
             
 
     def ShowAnt(self, ShouldShow):
@@ -213,8 +218,8 @@ class Ant:
 
 #####################################################################################################################################################################
 class AntWater(Ant):
-    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
-        super().__init__(x, y, box, facing, display, step)
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
+        super().__init__(x, y, box, facing, display, step, speed)
 
     def Update(self):
         """Moves in a random direction if not on a white square"""
@@ -239,26 +244,57 @@ class AntWater(Ant):
 
 #####################################################################################################################################################################
 class AntWood(Ant):
-    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
-        super().__init__(x, y, box, facing, display, step)
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
+        super().__init__(x, y, box, facing, display, step, speed)
         self.shouldMove = False
 
 
+    def Grow(self):
+        """Ant will only stay on connected blue areas and will turn blue to brown"""
+        oldx = self.x
+        oldy = self.y
+        randBlue = []
+        randBrown = []
+        for i in range(0,4):
+            if i == 0:
+                self.y -= 1
+            elif i == 1:
+                self.x += 1
+            elif i == 2:
+                self.y += 1
+            elif i == 3:
+                self.x -= 1
+
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_blue:
+                randBlue.append(i)
+            elif pix == Colors.A_Wood:
+                randBrown.append(i)
+            elif pix == Colors.A_Fire:
+                self.isAlive = False
+            self.x = oldx
+            self.y = oldy
+        
+        if len(randBlue) != 0:
+            r = random.randint(0,len(randBlue)-1)
+            self.facing = randBlue[r]
+            self.MoveCurrentSpace()
+        elif len(randBrown) != 0:
+            r = random.randint(0,len(randBrown)-1)
+            self.facing = randBrown[r]
+            self.MoveCurrentSpace()
+
+
     def Update(self):
+        """Turns blue pixels to brown and fills any connected blue squares to brown"""
         if self.isAlive:
             Ant.antArray.append(self)
         pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_white:
-            # set current tile to white
-            # self.display.set_at((self.x,self.y), Colors.A_blue)
+        if pix == Colors.A_blue:
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.fill(Colors.A_Wood, ((self.x,self.y), (1,1)))
-            # turn left and move
-            self.MoveRightStep()
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
-        else:
-            self.MoveRandom()
+        self.Grow()
+
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
@@ -268,14 +304,11 @@ class AntWood(Ant):
 
 #####################################################################################################################################################################
 class AntFire(Ant):
-    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
-        super().__init__(x, y, box, facing, display, step)
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
+        super().__init__(x, y, box, facing, display, step, speed)
         self.shouldMove = False
 
-
-
     def Update(self):
-    
         if self.isAlive:
             Ant.antArray.append(self)
         pix = self.display.get_at((self.x,self.y))
@@ -316,8 +349,8 @@ class AntFire(Ant):
 
 #####################################################################################################################################################################
 class AntPlant(Ant):
-    def __init__(self, x, y, box, facing, display, step=(1,1,1,1)):
-        super().__init__(x, y, box, facing, display, step)
+    def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
+        super().__init__(x, y, box, facing, display, step, speed)
         self.shouldMove = False
 
     def Grow(self):
@@ -326,46 +359,25 @@ class AntPlant(Ant):
         oldy = self.y
         randBlue = []
         randGreen = []
+        for i in range(0,4):
+            if i == 0:
+                self.y -= 1
+            elif i == 1:
+                self.x += 1
+            elif i == 2:
+                self.y += 1
+            elif i == 3:
+                self.x -= 1
 
-        self.x += 1
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            randBlue.append(1)
-        elif pix == Colors.A_green:
-            randGreen.append(1)
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
-        self.x = oldx
-
-        self.x -= 1
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            randBlue.append(3)
-        elif pix == Colors.A_green:
-            randGreen.append(3)
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
-        self.x = oldx
-
-        self.y += 1
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            randBlue.append(2)
-        elif pix == Colors.A_green:
-            randGreen.append(2)
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
-        self.y = oldy
-    
-        self.y -= 1
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            randBlue.append(0)
-        elif pix == Colors.A_green:
-            randGreen.append(0)
-        elif pix == Colors.A_Fire:
-            self.isAlive = False
-        self.y = oldy
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_blue:
+                randBlue.append(i)
+            elif pix == Colors.A_green:
+                randGreen.append(i)
+            elif pix == Colors.A_Fire:
+                self.isAlive = False
+            self.x = oldx
+            self.y = oldy
         
         if len(randBlue) != 0:
             r = random.randint(0,len(randBlue)-1)

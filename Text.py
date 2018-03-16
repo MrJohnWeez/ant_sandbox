@@ -30,6 +30,12 @@ class Text:
 
     def AddText(self, newText=None, forceUpdate=False):
         """changes and updates the text object"""
+        #Update screen if box is cleared
+        if newText != None and newText == "" and not self.text == "":
+            self.text = ""
+            self.AddText("",True)
+            self.text = ""
+
         if newText != None:
             # Make text rect same length as before to clear old text out
             tempstr = " "

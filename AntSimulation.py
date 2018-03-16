@@ -31,6 +31,7 @@ global stepRight
 global allowedAntNum
 global T_AntCount
 global mouse
+global limitAntSpeed
 
 
 #TextPaths
@@ -63,6 +64,7 @@ input_boxes = []
 buttons = []
 texts = []
 toolType = "Ant"
+limitAntSpeed = 0
 
 #Simulation speed vars
 startMultipler = 512     #Must be a number 2^
@@ -132,6 +134,10 @@ class StepBoxes:
 
         self.buttonObjects = [B_reset,B_random]
         self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
+    def ManualValueSet(self, newValueList):
+        assert len(newValueList) == 4
+        r = lambda: self.clearFunction(self.updateVars,self.boxObjects, newValueList)
+        r()
 
 
 
@@ -174,8 +180,34 @@ T_Speed = Text.Text("x"+str(startMultipler//userSpeed),BNFont,20,Colors.A_black,
 bSpeed = Interactive.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay, T_Speed, speedButton)
 buttons += [bClear,bPause,bSpeed]
 
+def UpdateAntSpeed(self):
+    print("Updated")
 
+T_antSpeed = Text.Text("0",BNFont,20,Colors.A_white,1,250,gameDisplay)
+IB_AntSpeed = Interactive.InputBox(100,250, 50, 20,Colors.A_red,Colors.A_optionsBg,gameDisplay,T_antSpeed,UpdateAntSpeed,0)
+input_boxes += [IB_AntSpeed]
 
+def UpdateStepVar(var, textBox):
+    var.UpdateByString(textBox.getText())
+    textBox.updateText(str(var.GetValue()))
+
+def ResetStepVars(varList, boxVars, overrideValue=None):
+    for i in range(len(varList)):
+        if overrideValue != None:
+            varList[i].SetValue(overrideValue[i])
+        else:
+            varList[i].Reset()
+        boxVars[i].updateText(str(varList[i].GetValue()))
+
+def RandomStepVars(varList, boxVars):
+    for i in range(len(varList)):
+        r = random.randint(0,screenH)
+        varList[i].SetValue(r)
+        boxVars[i].updateText(str(varList[i].GetValue()))
+    
+#Ant step boxes module
+StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, AntStepVars)
+stepBoxes = [StepBox1]
 
 
 def PlaceTool():
@@ -186,19 +218,28 @@ def PlaceTool():
 
     
     if toolType == "Ant":
-        tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WaterAnt":
-        tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WoodAnt":
-        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "FireAnt":
-        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        newList = []
+        for i in newStep:
+            i += 14
+            if i > screenH:
+                i = (i - screenH)
+            elif i < 0:
+                i = screenH + i
+            newList += [i]
+        print(newList)
+        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, limitAntSpeed)
         HelperAdd()
     elif toolType == "PlantAnt":
-        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep)
+        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
@@ -230,24 +271,7 @@ bAntPlant = Interactive.Button(1,bAntFire.getBottomLeft()[1]+5,60,20, Colors.A_c
 buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant]
 
 
-def UpdateStepVar(var, textBox):
-    var.UpdateByString(textBox.getText())
-    textBox.updateText(str(var.GetValue()))
 
-def ResetStepVars(varList, boxVars):
-    for i in range(len(varList)):
-        varList[i].Reset()
-        boxVars[i].updateText(str(varList[i].GetValue()))
-
-def RandomStepVars(varList, boxVars):
-    for i in range(len(varList)):
-        r = random.randint(0,screenH)
-        varList[i].SetValue(r)
-        boxVars[i].updateText(str(varList[i].GetValue()))
-    
-#Ant step boxes module
-StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, AntStepVars)
-stepBoxes = [StepBox1]
 
 #Simulation Functions
 def QuitSim():
