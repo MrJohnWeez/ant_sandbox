@@ -3,7 +3,7 @@ import pygame
 import random
 """
 ToDo List:
--Make a speed box for all ants. Controls how fast the ants can move
+-Make defualt speeds for the ants
 202 noraml ants ~= 500 fps
 """
 
@@ -84,7 +84,7 @@ def clamp(n, smallest, largest): return max(smallest, min(n, largest))
 #Classes:
 class StepBoxes:
     """Creates a set of interactive text boxes that executes functions based on given args. NOT A DEPENDENT CLASS!"""
-    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, randomFunction, updateVars):
+    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, randomFunction, updateVars, speedFunction):
         self.x = x
         self.y = y
         self.fontPath = fontPath
@@ -95,6 +95,7 @@ class StepBoxes:
         self.updateVars = updateVars
         self.xBox = self.x+6
         self.randomFunction = randomFunction
+        self.speedFunction = speedFunction
 
         #Colors
         labelColor = Colors.A_white
@@ -109,21 +110,23 @@ class StepBoxes:
         T_DownStep = Text.Text("Down :",self.fontPath,fontSize,labelColor,self.x,T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay,True,"topright")
         T_RightStep =Text.Text("Right :",self.fontPath,fontSize,labelColor,self.x,T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay,True,"topright")
         T_LeftStep = Text.Text("Left :",self.fontPath,fontSize,labelColor,self.x,T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay,True,"topright")
-        self.textObjects = [T_UpStep,T_DownStep,T_RightStep,T_LeftStep,T_Title]
+        T_AntSpeed = Text.Text("Slower:",self.fontPath,17,labelColor,self.x,T_LeftStep.GetY()+T_LeftStep.GetHieght(),self.Gdisplay,True,"topright")
+        self.textObjects = [T_UpStep,T_DownStep,T_RightStep,T_LeftStep,T_Title,T_AntSpeed]
 
         #Text objects for input boxes
         T_upStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, self.y,self.Gdisplay)
         T_downStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay)
         T_rightStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay)
         T_leftStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay)
-
+        T_antSpeed = Text.Text("0",BNFont,20,boxTextColor,self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(),self.Gdisplay)
         #Clickable input boxes
         IB_UpStep = Interactive.InputBox(self.xBox, self.y, 50, fontSize,boxColor,menuBG,self.Gdisplay,T_upStep,lambda x: self.runFunction(self.updateVars[0], x),1)
         IB_DownStep = Interactive.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_downStep,lambda x: self.runFunction(self.updateVars[1], x),1)
         IB_RightStep = Interactive.InputBox(self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_rightStep,lambda x: self.runFunction(self.updateVars[2], x),1)
         IB_LeftStep = Interactive.InputBox(self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_leftStep,lambda x: self.runFunction(self.updateVars[3], x),1)
-        self.boxObjects = [IB_UpStep,IB_DownStep,IB_RightStep,IB_LeftStep]
-        self.h = abs(IB_LeftStep.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
+        IB_AntSpeed = Interactive.InputBox(self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_antSpeed,lambda x: UpdateAntSpeed(x),1)
+        self.boxObjects = [IB_UpStep,IB_DownStep,IB_RightStep,IB_LeftStep,IB_AntSpeed]
+        self.h = abs(IB_AntSpeed.getBottomRight()[1]-IB_UpStep.getTopRight()[1])
         
         #Reset Button
         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
@@ -138,6 +141,23 @@ class StepBoxes:
         assert len(newValueList) == 4
         r = lambda: self.clearFunction(self.updateVars,self.boxObjects, newValueList)
         r()
+
+    def getX(self):
+        return self.x
+    def getY(self):
+        return self.y
+    def getW(self):
+        return self.w
+    def getH(self):
+        return self.h
+    def getTopLeft(self):
+        return (self.getX(), self.getY())
+    def getTopRight(self):
+        return (self.getX()+self.getW(), self.getY())
+    def getBottomLeft(self):
+        return (self.getX(), self.getY()+self.getH())
+    def getBottomRight(self):
+        return (self.getX()+self.getW(), self.getY()+self.getH())
 
 
 
@@ -180,12 +200,26 @@ T_Speed = Text.Text("x"+str(startMultipler//userSpeed),BNFont,20,Colors.A_black,
 bSpeed = Interactive.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay, T_Speed, speedButton)
 buttons += [bClear,bPause,bSpeed]
 
-def UpdateAntSpeed(self):
-    print("Updated")
+def UpdateAntSpeed(textBox):
+    global limitAntSpeed
+    limitAntSpeed = textBox.getText()
+    
+    minVal = 0
+    maxVal = 100
+    startVal = 1
+    if limitAntSpeed.isdigit():
+        limitAntSpeed = int(limitAntSpeed)
+    elif len(limitAntSpeed) > 0 and limitAntSpeed[0] == "-":
+        limitAntSpeed = minVal
+    else:
+        limitAntSpeed = startVal
+    
+    if limitAntSpeed > maxVal:
+        limitAntSpeed = maxVal
+    elif limitAntSpeed < minVal:
+        limitAntSpeed = minVal
 
-T_antSpeed = Text.Text("0",BNFont,20,Colors.A_white,1,250,gameDisplay)
-IB_AntSpeed = Interactive.InputBox(100,250, 50, 20,Colors.A_red,Colors.A_optionsBg,gameDisplay,T_antSpeed,UpdateAntSpeed,0)
-input_boxes += [IB_AntSpeed]
+    textBox.updateText(str(limitAntSpeed))
 
 def UpdateStepVar(var, textBox):
     var.UpdateByString(textBox.getText())
@@ -206,8 +240,9 @@ def RandomStepVars(varList, boxVars):
         boxVars[i].updateText(str(varList[i].GetValue()))
     
 #Ant step boxes module
-StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, AntStepVars)
+StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, AntStepVars, UpdateAntSpeed)
 stepBoxes = [StepBox1]
+
 
 
 def PlaceTool():
@@ -218,6 +253,7 @@ def PlaceTool():
 
     
     if toolType == "Ant":
+        print("limitAntSpeed",limitAntSpeed)
         tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WaterAnt":

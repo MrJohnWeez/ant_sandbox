@@ -223,18 +223,21 @@ class AntWater(Ant):
 
     def Update(self):
         """Moves in a random direction if not on a white square"""
+        self.currSpeed += 1
         if self.isAlive:
-            Ant.antArray.append(self)
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_white or pix == Colors.A_Fire:
-            # set current tile to white
-            # self.display.set_at((self.x,self.y), Colors.A_blue)
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.fill(Colors.A_blue, ((self.x,self.y), (1,1)))
-            # turn left and move
-            self.MoveLeftStep()
-        else:
-            self.MoveRandom()
+             Ant.antArray.append(self)
+        if self.currSpeed >= self.speed:
+            self.currSpeed = 0
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_white or pix == Colors.A_Fire:
+                # set current tile to white
+                # self.display.set_at((self.x,self.y), Colors.A_blue)
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.fill(Colors.A_blue, ((self.x,self.y), (1,1)))
+                # turn left and move
+                self.MoveLeftStep()
+            else:
+                self.MoveRandom()
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
@@ -287,13 +290,16 @@ class AntWood(Ant):
 
     def Update(self):
         """Turns blue pixels to brown and fills any connected blue squares to brown"""
+        self.currSpeed += 1
         if self.isAlive:
-            Ant.antArray.append(self)
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.fill(Colors.A_Wood, ((self.x,self.y), (1,1)))
-        self.Grow()
+             Ant.antArray.append(self)
+        if self.currSpeed >= self.speed:
+            self.currSpeed = 0
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_blue:
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.fill(Colors.A_Wood, ((self.x,self.y), (1,1)))
+            self.Grow()
 
 
     def Spawn(self):
@@ -309,34 +315,37 @@ class AntFire(Ant):
         self.shouldMove = False
 
     def Update(self):
+        self.currSpeed += 1
         if self.isAlive:
-            Ant.antArray.append(self)
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            self.isAlive = False
-        else:
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.fill(Colors.A_Fire, ((self.x,self.y), (1,1)))
-            oldx = self.x
-            oldy = self.y
-            if self.facing == 0:
-                self.x -= self.stepRight
-            elif self.facing == 1:
-                self.y -= self.stepUp
-            elif self.facing == 2:
-                self.x += self.stepLeft
-            elif self.facing == 3:
-                self.y += self.stepDown
-
-            if self.display.get_at((self.x,self.y)) != Colors.A_Fire:
-                r = self.facing-1
-                if r == -1:
-                    r = 3
-                self.facing = r
+             Ant.antArray.append(self)
+        if self.currSpeed >= self.speed:
+            self.currSpeed = 0
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_blue:
+                self.isAlive = False
             else:
-                self.x = oldx
-                self.y = oldy
-                self.MoveCurrentSpace()
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.fill(Colors.A_Fire, ((self.x,self.y), (1,1)))
+                oldx = self.x
+                oldy = self.y
+                if self.facing == 0:
+                    self.x -= self.stepRight
+                elif self.facing == 1:
+                    self.y -= self.stepUp
+                elif self.facing == 2:
+                    self.x += self.stepLeft
+                elif self.facing == 3:
+                    self.y += self.stepDown
+
+                if self.display.get_at((self.x,self.y)) != Colors.A_Fire:
+                    r = self.facing-1
+                    if r == -1:
+                        r = 3
+                    self.facing = r
+                else:
+                    self.x = oldx
+                    self.y = oldy
+                    self.MoveCurrentSpace()
                 
             
 
@@ -391,13 +400,16 @@ class AntPlant(Ant):
 
     def Update(self):
         """Turns blue pixels to green and fills any connected blue squares to green"""
+        self.currSpeed += 1
         if self.isAlive:
-            Ant.antArray.append(self)
-        pix = self.display.get_at((self.x,self.y))
-        if pix == Colors.A_blue:
-            Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-            self.display.fill(Colors.A_green, ((self.x,self.y), (1,1)))
-        self.Grow()
+             Ant.antArray.append(self)
+        if self.currSpeed >= self.speed:
+            self.currSpeed = 0
+            pix = self.display.get_at((self.x,self.y))
+            if pix == Colors.A_blue:
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.fill(Colors.A_green, ((self.x,self.y), (1,1)))
+            self.Grow()
 
 
     def Spawn(self):
