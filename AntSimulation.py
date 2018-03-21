@@ -3,7 +3,10 @@ import pygame
 import random
 """
 ToDo List:
--Make defualt speeds for the ants
+-How do zombies move?
+-Acid ant?
+-Add Sounds?
+-Random 1-20
 202 noraml ants ~= 500 fps
 """
 
@@ -32,6 +35,7 @@ global allowedAntNum
 global T_AntCount
 global mouse
 global limitAntSpeed
+global isPaused
 
 
 #TextPaths
@@ -57,14 +61,13 @@ spawn_Event  = pygame.USEREVENT + 1
 coolDown = 0
 
 #Simulation Vars
-isPaused = False
 r = [] #Pixels to render list
 allowedAntNum = 500
 input_boxes = []
 buttons = []
 texts = []
 toolType = "Ant"
-limitAntSpeed = 0
+limitAntSpeed = 1
 
 #Simulation speed vars
 startMultipler = 512     #Must be a number 2^
@@ -118,7 +121,7 @@ class StepBoxes:
         T_downStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay)
         T_rightStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay)
         T_leftStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay)
-        T_antSpeed = Text.Text("0",BNFont,20,boxTextColor,self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(),self.Gdisplay)
+        T_antSpeed = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(),self.Gdisplay)
         #Clickable input boxes
         IB_UpStep = Interactive.InputBox(self.xBox, self.y, 50, fontSize,boxColor,menuBG,self.Gdisplay,T_upStep,lambda x: self.runFunction(self.updateVars[0], x),1)
         IB_DownStep = Interactive.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_downStep,lambda x: self.runFunction(self.updateVars[1], x),1)
@@ -137,6 +140,7 @@ class StepBoxes:
 
         self.buttonObjects = [B_reset,B_random]
         self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
+
     def ManualValueSet(self, newValueList):
         assert len(newValueList) == 4
         r = lambda: self.clearFunction(self.updateVars,self.boxObjects, newValueList)
@@ -205,7 +209,7 @@ def UpdateAntSpeed(textBox):
     limitAntSpeed = textBox.getText()
     
     minVal = 0
-    maxVal = 100
+    maxVal = 500
     startVal = 1
     if limitAntSpeed.isdigit():
         limitAntSpeed = int(limitAntSpeed)
@@ -253,14 +257,13 @@ def PlaceTool():
 
     
     if toolType == "Ant":
-        print("limitAntSpeed",limitAntSpeed)
         tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WaterAnt":
         tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WoodAnt":
-        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
+        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*2+3)
         HelperAdd()
     elif toolType == "FireAnt":
         newList = []
@@ -271,11 +274,13 @@ def PlaceTool():
             elif i < 0:
                 i = screenH + i
             newList += [i]
-        print(newList)
-        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, limitAntSpeed)
+        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, limitAntSpeed*3+9)
         HelperAdd()
     elif toolType == "PlantAnt":
-        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
+        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*3+5)
+        HelperAdd()
+    elif toolType == "ZombieAnt":
+        tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*3+5)
         HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
@@ -285,6 +290,12 @@ def PlaceTool():
         y = clamp(y,0,screenH)
         gameDisplay.fill(Colors.A_white, ((x,y), (cubeSize*2,cubeSize*2)))
         pygame.display.update((x,y), (cubeSize*2,cubeSize*2))
+        Ant.Ant.KillAntsInRect(pygame.Rect(x,y,cubeSize*2,cubeSize*2))
+        if isPaused:
+            Ant.Ant.UpdateAllAnts()
+            #Update ant count if ants die
+            if T_AntCount.GetText() != str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum):
+                T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum),True)
         
     
         
@@ -296,7 +307,7 @@ T_Ant = Text.Text("Ant",BNFont,20,Colors.A_black,1,200,gameDisplay)
 bAnt = Interactive.Button(1,200,60,20, Colors.A_clearN, gameDisplay, T_Ant, lambda: ChangeToolType("Ant"), True)
 T_AntWater = Text.Text("Water",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
 bAntWater = Interactive.Button(1,bAnt.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWater, lambda: ChangeToolType("WaterAnt"), True)
-T_FillWhite= Text.Text("Clear Path",BNFont,20,Colors.A_black,1,bAntWater.getBottomLeft()[1]+5,gameDisplay)
+T_FillWhite= Text.Text("Delete Ant",BNFont,20,Colors.A_black,1,bAntWater.getBottomLeft()[1]+5,gameDisplay)
 bFillWhite = Interactive.Button(1,bAntWater.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_FillWhite, lambda: ChangeToolType("Fill"), True)
 T_AntWood = Text.Text("Wood",BNFont,20,Colors.A_black,1,bFillWhite.getBottomLeft()[1]+5,gameDisplay)
 bAntWood = Interactive.Button(1,bFillWhite.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWood, lambda: ChangeToolType("WoodAnt"), True)
@@ -304,7 +315,14 @@ T_AntFire = Text.Text("Fire",BNFont,20,Colors.A_black,1,bAntWood.getBottomLeft()
 bAntFire = Interactive.Button(1,bAntWood.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntFire, lambda: ChangeToolType("FireAnt"), True)
 T_AntPlant = Text.Text("Plant",BNFont,20,Colors.A_black,1,bAntFire.getBottomLeft()[1]+5,gameDisplay)
 bAntPlant = Interactive.Button(1,bAntFire.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntPlant, lambda: ChangeToolType("PlantAnt"), True)
-buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant]
+
+
+
+T_AntZombie = Text.Text("Zombie",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
+bAntZombie = Interactive.Button(bAnt.getTopRight()[0]+5,bAnt.getTopRight()[1],60,20, Colors.A_clearN, gameDisplay, T_AntZombie, lambda: ChangeToolType("ZombieAnt"), True)
+
+
+buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant,bAntZombie]
 
 
 
@@ -397,6 +415,7 @@ while True:
 
     # Move every ant if not paused
     if not isPaused:
+        
         Ant.Ant.UpdateAllAnts()
 
         #Update ant count if ants die
