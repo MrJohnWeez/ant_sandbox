@@ -3,7 +3,9 @@ import pygame
 import random
 """
 ToDo List:
--How do zombies move?
+-Fix Zombie ant when it hits a plant
+-Change the speed of the ants to run on time instead
+
 -Acid ant?
 -Add Sounds?
 -Random 1-20
@@ -63,6 +65,7 @@ coolDown = 0
 #Simulation Vars
 r = [] #Pixels to render list
 allowedAntNum = 500
+Ant.Ant.SetAntLimit(allowedAntNum)
 input_boxes = []
 buttons = []
 texts = []
@@ -280,7 +283,7 @@ def PlaceTool():
         tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*3+5)
         HelperAdd()
     elif toolType == "ZombieAnt":
-        tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*3+5)
+        tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*200)
         HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
@@ -437,28 +440,6 @@ while True:
 
 
 
-
-
-
-
-
-
-
-"""
-Other:
-
-#b_LUp = Button.Button("<", 1,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, False))
-#b_RUp = Button.Button(">", 1+75,screenH+3-16-75,15,25, Colors.clearN, gameDisplay, lambda : AntStep(stepUp, T_AntStepUp, True))
-
-# def AntStep(var, textVar, shouldIncrease, stepValue=1):
-#     var.UpdateValue(shouldIncrease,stepValue)
-#     textVar.ForceUpdate(str(var.GetValue()),Colors.optionsBg)
-
-#T_AntStepUp = Text.Text("1",BNFont,20,Colors.white,1+25,screenH+3-16-50,gameDisplay,True,"bottomleft")
-
-#input_box1 = InputBox.InputBox(1, 300, 50, 25,pygame.Color(255,255,255),pygame.Color(48,48,48),gameDisplay,BNFont,text="1",action=lambda x: UpdateStepVar(stepUp, x))
-
-"""
 
 
 
