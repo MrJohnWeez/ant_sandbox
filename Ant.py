@@ -233,15 +233,15 @@ class Ant:
                 self.display.set_at((self.x,self.y), Colors.A_white)
                 # turn left and move
                 self.MoveLeftStep()
-
-            elif pix == Colors.A_white or pix == Colors.A_Water:
-                # set current tile to white
-                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
-                self.display.set_at((self.x,self.y), Colors.A_black)
-                # turn right and move
-                self.MoveRightStep()
             elif pix == Colors.A_Fire:
                 self.isAlive = False
+            else:
+                # set current tile to white
+                Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
+                self.display.fill(Colors.A_black, ((self.x,self.y), (1,1)))
+                # turn right and move
+                self.MoveRightStep()
+            
             
 
     def ShowAnt(self, ShouldShow):
@@ -481,6 +481,7 @@ class AntZombie(Ant):
         self.antType = None
         self.numStepsLeft = 2000 # number of miliseconds that the zombie ant will wait to spawn 4 ants
         self.preTicks = pygame.time.get_ticks() # Tick count when last updated was called
+        self.firstAnt = None
         super().__init__(x, y, box, facing, display, step, speed)
 
 
@@ -509,6 +510,11 @@ class AntZombie(Ant):
                     self.antType = AntPlant
                 elif pix == Colors.A_Wood:
                     self.antType = AntWood
+                elif pix == Colors.A_black:
+                    self.antType = Ant
+                if self.antType != None:
+                    newStep = (self.stepUp,self.stepDown,self.stepLeft,self.stepRight)
+                self.firstAnt = self.antType(self.x,self.y,self.box,self.facing,self.display,newStep,1)
                 self.preTicks = pygame.time.get_ticks()
             elif self.zombieStage == 1:
                 # Ant moves like the host ant until its life is over then it spawns 4 more similar ants
@@ -518,18 +524,18 @@ class AntZombie(Ant):
 
                     # The following lines of code spawn in 1 ant to replace the zombie ant
                     # Then spawn 4 ants around the center of the first ant
-                    newSpeed = (self.stepUp,self.stepDown,self.stepLeft,self.stepRight)
+                    newStep = (self.stepUp,self.stepDown,self.stepLeft,self.stepRight)
                     radius = 5 #Square Raduis of the other ants spawn location
-                    Ant.antArray.append(self.antType(self.x,self.y,self.box,self.facing,self.display,newSpeed))
-                    Ant.antArray.append(self.antType(self.x+radius,self.y,self.box,self.facing,self.display,newSpeed))
-                    Ant.antArray.append(self.antType(self.x,self.y+radius,self.box,self.facing,self.display,newSpeed))
-                    Ant.antArray.append(self.antType(self.x,self.y-radius*2,self.box,self.facing,self.display,newSpeed))
-                    Ant.antArray.append(self.antType(self.x-radius*2,self.y,self.box,self.facing,self.display,newSpeed))
+                    self.firstAnt.Update()
+                    Ant.antArray.append(self.antType(self.x+radius,self.y,self.box,self.facing,self.display,newStep,1))
+                    Ant.antArray.append(self.antType(self.x,self.y+radius,self.box,self.facing,self.display,newStep))
+                    Ant.antArray.append(self.antType(self.x,self.y-radius*2,self.box,self.facing,self.display,newStep))
+                    Ant.antArray.append(self.antType(self.x-radius*2,self.y,self.box,self.facing,self.display,newStep))
                 else:
                     gTicks = pygame.time.get_ticks()
                     self.numStepsLeft -= (gTicks - self.preTicks)
                     
-                    self.antType.Update(self, False)
+                    self.firstAnt.Update(False)
                     self.preTicks = gTicks
                     
 

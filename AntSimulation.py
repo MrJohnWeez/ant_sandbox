@@ -3,12 +3,11 @@ import pygame
 import random
 """
 ToDo List:
--Fix Zombie ant when it hits a plant
 -Change the speed of the ants to run on time instead
-
--Acid ant?
--Add Sounds?
--Random 1-20
+-Acid ant (Kills all ants but will die after a certain amount of blocks. Turns white to yellow and all other colors to white)
+-Make start menu with a quit button, a play button, about button, and an info/help button?
+-Add Sounds (When you place an ant,  hit clear, ect)
+-Random 1-20?
 202 noraml ants ~= 500 fps
 """
 
