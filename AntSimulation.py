@@ -3,10 +3,10 @@ import pygame
 import random
 """
 ToDo List:
--Change the speed of the ants to run on time instead
 -Acid ant (Kills all ants but will die after a certain amount of blocks. Turns white to yellow and all other colors to white)
 -Make start menu with a quit button, a play button, about button, and an info/help button?
 -Add Sounds (When you place an ant,  hit clear, ect)
+-BUG! ___ When ants are at max you can't delete any
 -Random 1-20?
 202 noraml ants ~= 500 fps
 """
@@ -65,11 +65,12 @@ coolDown = 0
 r = [] #Pixels to render list
 allowedAntNum = 500
 Ant.Ant.SetAntLimit(allowedAntNum)
+Ant.Ant.maxSpeed = 6000
 input_boxes = []
 buttons = []
 texts = []
 toolType = "Ant"
-limitAntSpeed = 1
+limitAntSpeed = Ant.Ant.maxSpeed-1000
 
 #Simulation speed vars
 startMultipler = 512     #Must be a number 2^
@@ -123,7 +124,7 @@ class StepBoxes:
         T_downStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(),self.Gdisplay)
         T_rightStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_DownStep.GetY()+T_DownStep.GetHieght(),self.Gdisplay)
         T_leftStep = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_RightStep.GetY()+T_RightStep.GetHieght(),self.Gdisplay)
-        T_antSpeed = Text.Text("1",BNFont,20,boxTextColor,self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(),self.Gdisplay)
+        T_antSpeed = Text.Text(str(Ant.Ant.maxSpeed-1000),BNFont,20,boxTextColor,self.xBox, T_leftStep.GetY()+T_leftStep.GetHieght(),self.Gdisplay)
         #Clickable input boxes
         IB_UpStep = Interactive.InputBox(self.xBox, self.y, 50, fontSize,boxColor,menuBG,self.Gdisplay,T_upStep,lambda x: self.runFunction(self.updateVars[0], x),1)
         IB_DownStep = Interactive.InputBox(self.xBox, T_UpStep.GetY()+T_UpStep.GetHieght(), 50, fontSize,boxColor,menuBG,self.Gdisplay,T_downStep,lambda x: self.runFunction(self.updateVars[1], x),1)
@@ -210,9 +211,9 @@ def UpdateAntSpeed(textBox):
     global limitAntSpeed
     limitAntSpeed = textBox.getText()
     
-    minVal = 0
-    maxVal = 500
-    startVal = 1
+    minVal = 1
+    maxVal = Ant.Ant.maxSpeed
+    startVal = 5000
     if limitAntSpeed.isdigit():
         limitAntSpeed = int(limitAntSpeed)
     elif len(limitAntSpeed) > 0 and limitAntSpeed[0] == "-":
@@ -256,7 +257,6 @@ def PlaceTool():
     def HelperAdd():
         tempAnt.Spawn()         
         T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(allowedAntNum),True)
-
     
     if toolType == "Ant":
         tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
@@ -265,7 +265,7 @@ def PlaceTool():
         tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "WoodAnt":
-        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*2+3)
+        tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "FireAnt":
         newList = []
@@ -276,13 +276,13 @@ def PlaceTool():
             elif i < 0:
                 i = screenH + i
             newList += [i]
-        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, limitAntSpeed*3+9)
+        tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, limitAntSpeed)
         HelperAdd()
     elif toolType == "PlantAnt":
-        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*3+5)
+        tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "ZombieAnt":
-        tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed*200)
+        tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
@@ -365,8 +365,10 @@ def ResetSim():
 #Set up Simulation for setup
 ResetSim()
 
+foo = 0
 #Main loop
 while True:
+    foo+=1
     #Check for Button interaction
     mouse = pygame.mouse.get_pos()
     mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
@@ -414,6 +416,7 @@ while True:
             if event.key == pygame.K_z:
                 #print(Ant.Ant.GetAntCount())
                 print(clock.get_fps())
+                #print(foo,"    ",pygame.time.get_ticks())
 
     # Move every ant if not paused
     if not isPaused:

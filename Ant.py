@@ -7,9 +7,10 @@ class Ant:
     updateArray = []
     antArray = []
     antLimit = 0
-
+    maxSpeed = 6000
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
         """Define a basic ant. Moves by step when on black"""
+        #pos
         self.box = box
         self.x = x
         self.y = y
@@ -18,11 +19,18 @@ class Ant:
         self.stepDown = step[1]
         self.stepLeft = step[2]
         self.stepRight = step[3]
+
+        #display
         self.display = display
         self.TempScreenColor = self.display.get_at((self.x,self.y))
+
+        #properties
         self.isAlive = True
+
+        #speed
         self.speed = speed
-        self.currSpeed = 0
+        self.speedScalar = Ant.maxSpeed-1000+1
+        self.TicksLeft = self.speedScalar-speed
         
     @classmethod
     def GetRectUpdates(cls):
@@ -42,10 +50,10 @@ class Ant:
         i = 0
         tempMax = Ant.GetAntLimit()
         for a in temp:
-            i += 1
             if i == tempMax:
                 break
             a.Update()
+            i += 1
             
     @classmethod
     def GetAntCount(cls):
@@ -221,11 +229,12 @@ class Ant:
 
     def Update(self, AutoUpdate=True):
         """A normal black ant path"""
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
-             Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+            Ant.antArray.append(self)
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            #print(self.speedScalar,"     ", self.speed, "      ", self.speedScalar-self.speed)
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_black:
                 # set current tile to white
@@ -270,11 +279,11 @@ class AntWater(Ant):
 
     def Update(self, AutoUpdate=True):
         """Moves in a random direction if not on a white square"""
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
              Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_white or pix == Colors.A_Fire or pix == Colors.A_Plant or pix == Colors.A_Zombie:
                 Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
@@ -294,7 +303,7 @@ class AntWood(Ant):
     """Ant that will leave its trail only with-in a water ant's trail."""
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
         super().__init__(x, y, box, facing, display, step, speed)
-
+        self.speedScalar += 150
 
     def Grow(self):
         """Ant will only stay on connected blue areas and will turn blue to brown"""
@@ -334,11 +343,11 @@ class AntWood(Ant):
 
     def Update(self, AutoUpdate=True):
         """Turns blue pixels to brown and fills any connected blue squares to brown"""
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
              Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_Water:
                 Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
@@ -357,13 +366,14 @@ class AntFire(Ant):
     """Kills any ant that touches its path. Will die on contact of water"""
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
         super().__init__(x, y, box, facing, display, step, speed)
+        self.speedScalar += 50
 
     def Update(self, AutoUpdate=True):
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
              Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_Water:
                 self.isAlive = False
@@ -407,6 +417,7 @@ class AntPlant(Ant):
     A water ant can overwrite the trail of the plant ant"""
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
         super().__init__(x, y, box, facing, display, step, speed)
+        self.speedScalar += 25
 
     def Grow(self):
         """Ant will only stay on connected blue areas and will turn blue to green"""
@@ -449,11 +460,11 @@ class AntPlant(Ant):
 
     def Update(self, AutoUpdate=True):
         """Turns blue pixels to green and fills any connected blue squares to green"""
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
              Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_blue:
                 Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
@@ -477,20 +488,22 @@ class AntZombie(Ant):
       converts it cannot convert again and will die."""
 
     def __init__(self, x, y, box, facing, display, step=(1,1,1,1), speed=0):
+        super().__init__(x, y, box, facing, display, step, speed)
+        self.speedScalar += 200
         self.zombieStage = 0 #0=looking for host type, 1=Found host type, 2=Fired spreading now a normal ant
         self.antType = None
-        self.numStepsLeft = 2000 # number of miliseconds that the zombie ant will wait to spawn 4 ants
-        self.preTicks = pygame.time.get_ticks() # Tick count when last updated was called
+        self.hostAntSpeed = Ant.maxSpeed
         self.firstAnt = None
-        super().__init__(x, y, box, facing, display, step, speed)
+        self.miliLeft = 2000 # number of miliseconds that the zombie ant will wait to spawn 4 ants
+        self.preTicks = pygame.time.get_ticks()
 
 
     def Update(self, AutoUpdate=True):
-        self.currSpeed += 1
         if self.isAlive and AutoUpdate:
              Ant.antArray.append(self)
-        if self.currSpeed >= self.speed:
-            self.currSpeed = 0
+        self.TicksLeft -= 1
+        if self.TicksLeft <= 0:
+            self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if self.zombieStage == 0 and (pix == Colors.A_white or pix == Colors.A_Zombie):
                 # Ant zombie is looking for a host
@@ -503,22 +516,28 @@ class AntZombie(Ant):
                 # Ant is now a zombie and found a host type
                 self.zombieStage = 1
                 if pix == Colors.A_Water:
+                    self.hostAntSpeed = Ant.maxSpeed
                     self.antType = AntWater
                 elif pix == Colors.A_Fire:
+                    self.hostAntSpeed = Ant.maxSpeed
                     self.antType = AntFire
                 elif pix == Colors.A_Plant:
+                    self.hostAntSpeed = Ant.maxSpeed
                     self.antType = AntPlant
                 elif pix == Colors.A_Wood:
+                    self.hostAntSpeed = Ant.maxSpeed
                     self.antType = AntWood
                 elif pix == Colors.A_black:
+                    self.hostAntSpeed = Ant.maxSpeed
                     self.antType = Ant
                 if self.antType != None:
                     newStep = (self.stepUp,self.stepDown,self.stepLeft,self.stepRight)
-                self.firstAnt = self.antType(self.x,self.y,self.box,self.facing,self.display,newStep,1)
+                self.speed = self.hostAntSpeed
+                self.firstAnt = self.antType(self.x,self.y,self.box,self.facing,self.display,newStep,self.hostAntSpeed)
                 self.preTicks = pygame.time.get_ticks()
             elif self.zombieStage == 1:
                 # Ant moves like the host ant until its life is over then it spawns 4 more similar ants
-                if self.numStepsLeft <= 0:
+                if self.miliLeft <= 0:
                     self.isAlive = False
                     self.zombieStage = 2
 
@@ -527,14 +546,13 @@ class AntZombie(Ant):
                     newStep = (self.stepUp,self.stepDown,self.stepLeft,self.stepRight)
                     radius = 5 #Square Raduis of the other ants spawn location
                     self.firstAnt.Update()
-                    Ant.antArray.append(self.antType(self.x+radius,self.y,self.box,self.facing,self.display,newStep,1))
-                    Ant.antArray.append(self.antType(self.x,self.y+radius,self.box,self.facing,self.display,newStep))
-                    Ant.antArray.append(self.antType(self.x,self.y-radius*2,self.box,self.facing,self.display,newStep))
-                    Ant.antArray.append(self.antType(self.x-radius*2,self.y,self.box,self.facing,self.display,newStep))
+                    Ant.antArray.append(self.antType(self.x+radius,self.y,self.box,self.facing,self.display,newStep,self.hostAntSpeed))
+                    Ant.antArray.append(self.antType(self.x,self.y+radius,self.box,self.facing,self.display,newStep,self.hostAntSpeed))
+                    Ant.antArray.append(self.antType(self.x,self.y-radius*2,self.box,self.facing,self.display,newStep,self.hostAntSpeed))
+                    Ant.antArray.append(self.antType(self.x-radius*2,self.y,self.box,self.facing,self.display,newStep,self.hostAntSpeed))
                 else:
                     gTicks = pygame.time.get_ticks()
-                    self.numStepsLeft -= (gTicks - self.preTicks)
-                    
+                    self.miliLeft -= (gTicks - self.preTicks)
                     self.firstAnt.Update(False)
                     self.preTicks = gTicks
                     
