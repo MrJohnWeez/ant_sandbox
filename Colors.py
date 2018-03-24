@@ -11,7 +11,8 @@ A_Water = (0,0,255,255)
 A_Fire = (237, 48, 15,255) #Orange Red
 A_Wood = (119, 77, 0,255) #Brown
 A_Zombie = (142, 9, 232,255) #Purple
-A_Plant = (0,255,0,255)
+A_Plant = (0,255,0,255) #Green
+A_Crazy = (233, 237, 42,255) #Yellow
 
 A_optionsBg = (48, 48, 48,255)
 A_clearA = (170, 100, 100,255)

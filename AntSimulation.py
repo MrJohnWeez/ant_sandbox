@@ -3,7 +3,6 @@ import pygame
 import random
 """
 ToDo List:
--Acid ant (Kills all ants but will die after a certain amount of blocks. Turns white to yellow and all other colors to white)
 -Make start menu with a quit button, a play button, about button, and an info/help button?
 -Add Sounds (When you place an ant,  hit clear, ect)
 -BUG! ___ When ants are at max you can't delete any
@@ -284,6 +283,9 @@ def PlaceTool():
     elif toolType == "ZombieAnt":
         tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
         HelperAdd()
+    elif toolType == "CrazyAnt":
+        tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, limitAntSpeed)
+        HelperAdd()
     elif toolType == "Fill":
         cubeSize = 15
         x = mouse[0] - cubeSize
@@ -322,9 +324,11 @@ bAntPlant = Interactive.Button(1,bAntFire.getBottomLeft()[1]+5,60,20, Colors.A_c
 
 T_AntZombie = Text.Text("Zombie",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
 bAntZombie = Interactive.Button(bAnt.getTopRight()[0]+5,bAnt.getTopRight()[1],60,20, Colors.A_clearN, gameDisplay, T_AntZombie, lambda: ChangeToolType("ZombieAnt"), True)
+T_AntCrazy = Text.Text("Crazy",BNFont,20,Colors.A_black,1,bAntZombie.getBottomLeft()[1]+5,gameDisplay)
+bAntCrazy = Interactive.Button(bAnt.getTopRight()[0]+5,bAntZombie.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntCrazy, lambda: ChangeToolType("CrazyAnt"), True)
 
 
-buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant,bAntZombie]
+buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant,bAntZombie,bAntCrazy]
 
 
 
