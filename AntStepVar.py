@@ -48,4 +48,21 @@ class AntStepVar:
     def Reset(self):
         """Set the value of class to defualt starting value"""
         self.value = self.startValue
+
+    def GetMin(self):
+        return self.min
+    def GetMax(self):
+        return self.max
         
+class AntStepGroup():
+    def __init__(self,minValue,maxValue):
+        self.up = AntStepVar(minValue,maxValue)
+        self.down = AntStepVar(minValue,maxValue)
+        self.right = AntStepVar(minValue,maxValue)
+        self.left = AntStepVar(minValue,maxValue)
+    
+    def GetGroup(self):
+        return [self.up, self.down, self.right, self.left]
+
+    def GetGroupValues(self):
+        return [x.GetValue() for x in self.GetGroup()]

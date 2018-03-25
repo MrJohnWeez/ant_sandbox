@@ -84,11 +84,11 @@ class Ant:
         return cls.antLimit
 
     def Spawn(self):
-        """Places a black pixel where a normal ant would spawn"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_black)
-        
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        """Places an ant on screen"""
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_black)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
         
 
     def __get_x(self):
@@ -305,9 +305,10 @@ class AntWater(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_Water)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_Water)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 #####################################################################################################################################################################
 class AntWood(Ant):
@@ -369,9 +370,10 @@ class AntWood(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_Wood)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_Wood)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 #####################################################################################################################################################################
 class AntFire(Ant):
@@ -422,9 +424,10 @@ class AntFire(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_Fire)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_Fire)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
 #####################################################################################################################################################################
@@ -493,9 +496,10 @@ class AntPlant(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_Plant)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_Plant)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
 #####################################################################################################################################################################
@@ -524,7 +528,7 @@ class AntZombie(Ant):
         if self.TicksLeft <= 0:
             self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
-            if self.zombieStage == 0 and (pix == Colors.A_white or pix == Colors.A_Zombie or Colors.A_Crazy):
+            if self.zombieStage == 0 and (pix == Colors.A_white or pix == Colors.A_Zombie or pix == Colors.A_Crazy):
                 # Ant zombie is looking for a host
                 Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
                 self.display.fill(Colors.A_Zombie, ((self.x,self.y), (1,1)))
@@ -583,10 +587,11 @@ class AntZombie(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.facing = random.randint(0,3)
-        self.display.set_at((self.x,self.y), Colors.A_Zombie)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.facing = random.randint(0,3)
+            self.display.set_at((self.x,self.y), Colors.A_Zombie)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))
 
 
 
@@ -620,6 +625,7 @@ class AntCrazy(Ant):
 
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
-        Ant.antArray.append(self)
-        self.display.set_at((self.x,self.y), Colors.A_Crazy)
-        pygame.display.update(pygame.Rect(self.x,self.y,1,1))
+        if len(Ant.antArray) < Ant.antLimit:
+            Ant.antArray.append(self)
+            self.display.set_at((self.x,self.y), Colors.A_Crazy)
+            pygame.display.update(pygame.Rect(self.x,self.y,1,1))

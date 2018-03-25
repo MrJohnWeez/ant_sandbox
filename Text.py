@@ -14,9 +14,8 @@ class Text:
         self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
         self.shouldUpdate = shouldUpdate
         self.pos = pos
-        self.AddText()  #Update Text
         self.prevTextLength = len(str(text))
-        
+        self.AddText()  #Update Text
         
     
     def text_objects(self, font):
@@ -28,29 +27,8 @@ class Text:
             textSurf = font.render(self.text,True,self.color,self.backgroundColor)
         return textSurf, textSurf.get_rect()
 
-    def AddText(self, newText=None, forceUpdate=False):
-        """changes and updates the text object"""
-        #Update screen if box is cleared
-        if newText != None and newText == "" and not self.text == "":
-            self.text = ""
-            self.AddText("",True)
-            self.text = ""
-
-        if newText != None:
-            # Make text rect same length as before to clear old text out
-            tempstr = " "
-            if len(newText) < self.prevTextLength:
-                factor = self.prevTextLength - len(newText)
-                tempstr = tempstr * factor * 3
-            else:
-                tempstr = ""
-                
-            self.prevTextLength = len(newText)
-            self.text = newText + tempstr
-            
-        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
-
-        # Make the text positioned based on given args
+    def UpdateTextPos(self):
+        """Make the text positioned based on given args"""
         if self.pos == 'topleft':
             self.TextRect.x = self.x
             self.TextRect.y = self.y
@@ -67,6 +45,24 @@ class Text:
             self.TextRect.center = (self.x,self.y)
         else:
             print("Error: ", self.pos, " is not a valid text position")
+
+    def AddText(self, newText=None, forceUpdate=False):
+        """Changes and updates the text object"""
+        #If string value is shorter then prevous remove extra chars on screen
+        if newText != None and len(newText) < self.prevTextLength:
+            tempstr = " "
+            tempstr = tempstr * self.prevTextLength * 3
+            self.prevTextLength = 0
+            self.text = tempstr
+            self.AddText(tempstr,True)
+            self.text = newText
+            self.prevTextLength = len(newText)
+        elif newText != None:
+            self.text = newText
+            self.prevTextLength = len(newText)
+            
+        self.TextSurf, self.TextRect = self.text_objects(pygame.font.Font(self.font,self.size))
+        self.UpdateTextPos()
 
         # Update the text on screen
         if self.shouldUpdate or forceUpdate:
