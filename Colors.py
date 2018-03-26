@@ -4,8 +4,10 @@
 A_white = (255,255,255,255)
 A_black = (0,0,0,255)
 A_red = (255,0,0,255)
-A_green = (0,255,0,255)
+A_green = (0,255,0,255) #very light green
 A_blue = (0,0,255,255)
+A_RichGreen = (33, 160, 69, 255) #darker saturated green
+A_RichBlueGreen = (33, 175, 171, 255) #Blue green
 
 A_Water = (0,0,255,255)
 A_Fire = (237, 48, 15,255) #Orange Red

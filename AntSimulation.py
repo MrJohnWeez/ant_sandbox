@@ -24,6 +24,7 @@ global mouse
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
+mainMenuBG = CustomPath.Path("assets\TempBackground.png")
 
 #Define Screen
 screenH = 600
@@ -438,21 +439,54 @@ def AntSimulation():
                     T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
                     
                 pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
+class ImageType:
+    def __init__(self,path,display,scale=1):
+        self.image = pygame.image.load(path)
+        self.currScale = scale
+        self.display = display
+        self.imgRect = self.image.get_rect()
+        self.Scale(scale)
+
+    def Draw(self,pos):
+        gameDisplay.blit(self.image, (pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2))
+        pygame.display.update(pygame.Rect(pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2,self.imgRect.w,self.imgRect.h))
+
+    def Scale(self, newScale=1):
+        r = self.image.get_rect()
+        self.image = pygame.transform.scale(self.image, (int(r.w*newScale),int(r.h*newScale)))
+        self.imgRect = self.image.get_rect()
 
 def MainMenu():
-    """Main menu loop"""
+    """Main menu"""
+    mainMenuTitle = ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay,0.65)
+    MenuBG= ImageType(CustomPath.Path("assets\AntSimMenuBackground.jpg"),gameDisplay,1.3)
     go = True
     buttons = []
     texts = []
 
-    T_Title = Text.Text("Ant Simulation",BNFont,30,Colors.A_black,200,200,gameDisplay,True,"topleft")
-    texts += [T_Title]
+    gameDisplay.fill(Colors.A_white)
+    pygame.display.update()
+    MenuBG.Draw((0,0))
+    mainMenuTitle.Draw((screenW//2,screenH//4))
+    
+
+    T_Play = Text.Text("Play",BNFont,30,Colors.A_black,screenW//3.6,screenH//2,gameDisplay)
+    B_Play = Interactive.Button(T_Play.GetX(),T_Play.GetY(),100,50, Colors.A_RichGreen, gameDisplay, T_Play, AntSimulation)
+
+    T_About = Text.Text("About",BNFont,30,Colors.A_black,B_Play.getTopRight()[0]+175,B_Play.getTopRight()[1],gameDisplay)
+    B_About = Interactive.Button(T_About.GetX(),T_About.GetY(),100,50, Colors.A_RichBlueGreen, gameDisplay, T_About, AntSimulation)
+
+    T_Quit = Text.Text("Quit",BNFont,20,Colors.A_black,screenW,0,gameDisplay)
+    B_Quit = Interactive.Button(screenW-T_Quit.GetWidth()-10,0,T_Quit.GetWidth()+10,T_Quit.GetHieght(), Colors.A_Fire, gameDisplay, T_Quit, QuitSim)
+
+    buttons += [B_Play,B_Quit,B_About]
+    
+    
 
     while go:
         #Check for Button interaction
-        if mouseOverMenu:
-            for button in buttons:
-                button.Update()
+        for button in buttons:
+            button.Update()
 
         for event in pygame.event.get():
             #Quit Game
@@ -462,12 +496,11 @@ def MainMenu():
             #Press 'C' to clear ants and screen
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_z:
-                    print(clock.get_fps())
-
-        clock.tick(60)    #Control the framerate of the simulation (Simulation speed)
+                    AntSimulation()
 
 
 
 
 
-AntSimulation()
+#AntSimulation()
+MainMenu()
