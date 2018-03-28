@@ -2,6 +2,8 @@ import pygame
 import Colors
 import Text
 
+
+
 ######################################################################################################################################################################
 ######################################################################################################################################################################
 #BUTTONS            BUTTONS            BUTTONS            BUTTONS            BUTTONS            BUTTONS            BUTTONS            BUTTONS            BUTTONS
@@ -62,6 +64,8 @@ class ButtonBase:
     def getBottomRight(self):
         """Returns bottom right cornner cordinate"""
         return (self.getX()+self.getW(), self.getY()+self.getH())
+    def getCenter(self):
+        return (self.getX()+self.getW()//2,self.getY()+self.getH()//2)
 
 ######################################################################################################################################################################
 
@@ -111,7 +115,123 @@ class Button(ButtonBase):
         """ Draws button on command"""
         self.Update()
     
+
+
+
+
+
+
+
+
+class ImageType:
+    def __init__(self,path,display,xScale=1, yScale=1):
+        self.image = pygame.image.load(path)
+        self.display = display
+        self.imgRect = self.image.get_rect()
+        self.currScale = (xScale,yScale)
+        self.Scale(xScale, yScale)
+
+    def Draw(self,pos):
+        self.display.blit(self.image, (pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2))
+        pygame.display.update(pygame.Rect(pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2,self.imgRect.w,self.imgRect.h))
+
+    def Scale(self, xScale=1, yScale=1):
+        r = self.image.get_rect()
+        self.image = pygame.transform.scale(self.image, (int(r.w*xScale),int(r.h*yScale)))
+        self.currScale = (xScale,yScale)
+        self.imgRect = self.image.get_rect()
+
+
+    def getH(self):
+        return self.imgRect.h
+    def getW(self):
+        return self.imgRect.w
+    def getX(self):
+        return self.imgRect.x
+    def getY(self):
+        return self.imgRect.y
+    def getScale(self):
+        return self.currScale
     
+######################################################################################################################################################################
+
+class ButtonImage(ButtonBase):
+    """Creates a button object that can be clicked with an image as the button"""
+    def __init__(self, x, y, w, h, normalImagePath, hoverImagePath, clickedImagePath, display, textObject, action=None, autoFontSize=False):
+        normalColor = Colors.A_black
+        super().__init__(x, y, w, h, normalColor, display, textObject, action)
+        if autoFontSize:
+            self.AutoFont()
+
+        self.image = pygame.Surface((self.w,self.h))  # Create image surface
+        self.image.blit(self.gameDisplay,(0,0),((self.x,self.y),(self.w,self.h)))  # Blit portion of the display to the image
+        
+        self.state = 1
+        self.normalImage = ImageType(normalImagePath,display)
+        self.hoverImage = ImageType(hoverImagePath,display)
+        self.clickedImage = ImageType(clickedImagePath,display)
+        self.UpdateImageScales()
+
+    def UpdateImageScales(self):
+        self.normalImage.Scale((self.w/self.normalImage.getW())*0.9,(self.h/self.normalImage.getH())*0.9)
+        self.hoverImage.Scale(self.w/self.hoverImage.getW(),self.h/self.hoverImage.getH())
+        self.clickedImage.Scale(self.w/self.clickedImage.getW(),self.h/self.clickedImage.getH())
+
+
+
+    def UpdateToScreenImage(self, buttonImageType):
+        """Draw image button on screen"""
+        imageType = self.normalImage
+        if buttonImageType == "Hover":
+            imageType = self.hoverImage
+        elif buttonImageType == "Clicked":
+            imageType = self.clickedImage
+        self.gameDisplay.blit(self.image,(self.x,self.y))
+        imageType.Draw(self.getCenter())
+            
+        #Update the text object and update the whole button on the game screen
+        self.textObject.TextRect.center = ((self.x+(self.w/2)),(self.y+(self.h/2)))
+        self.textObject.ForceBlit()
+        pygame.display.update(pygame.Rect(self.x, self.y, self.w, self.h))
+
+
+
+    def Update(self, newMsg=None):
+        """Update if user has interacted with button"""
+        mouse = pygame.mouse.get_pos()
+        #If not hovered
+        moveOver = self.x+self.w > mouse[0] > self.x and self.y+self.h > mouse[1] > self.y
+
+        #If message has changed
+        if newMsg != None: self.textObject.AddText(newMsg)
+
+        if moveOver and self.state == 0:
+            #Mouse is over button change the color state
+            self.state = 1
+            self.UpdateToScreenImage("Hover")
+            
+        elif not moveOver and (self.state == 1 or self.state == 2):
+            #Mouse no longer over button change color state to normal
+            self.state = 0
+            self.UpdateToScreenImage("Normal")
+
+        elif moveOver and self.state == 1:
+            #Mouse is over button and it is ready to be clicked
+            click = pygame.mouse.get_pressed()
+            if click[0] == 1 and self.action != None:
+                self.state = 2
+                self.UpdateToScreenImage("Clicked")
+                self.action()
+
+        elif self.state == 2 and pygame.mouse.get_pressed()[0] == 0:
+            #Mouse has stopped holding down click so turn button to normal color
+            self.UpdateToScreenImage("Normal")
+            self.state = 0
+
+    #Draws initual button state
+    def DrawButton(self):
+        """ Draws button on command"""
+        self.Update()
 
 ######################################################################################################################################################################
 
