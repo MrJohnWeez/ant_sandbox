@@ -67,17 +67,38 @@ class ButtonBase:
         return (self.getX()+self.getW(), self.getY()+self.getH())
     def getCenter(self):
         return (self.getX()+self.getW()//2,self.getY()+self.getH()//2)
+    def getBottomCenter(self):
+        return (self.getX()+self.getW()//2,self.getY()+self.getH())
+    def getTopCenter(self):
+        return (self.getX()+self.getW()//2,self.getY())    
 
 ######################################################################################################################################################################
 
 class Button(ButtonBase):
     """Creates a button object that can be clicked"""
-    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, autoFontSize=False):
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, autoFontSize=False,pos='topleft'):
+        self.pos = pos
+        if self.pos == 'topright':
+            x = x - w
+        elif self.pos == 'bottomright':
+            x = x - w
+            y = y - h
+        elif self.pos == 'bottomleft':
+            y = y - h
+        elif self.pos == 'center':
+            x = x - (w//2)
+            y = y - (h//2)
+        elif self.pos == 'bottomcenter':
+            x = x - (w//2)
+            y = y - h
+        elif self.pos == 'topcenter':
+            x = x - (w//2)
         super().__init__(x, y, w, h, normalColor, display, textObject, action)
         if autoFontSize:
             self.AutoFont()
         
         self.state = 1
+        self.UpdateToScreen(self.normalColor)
         
     def Update(self, newMsg=None):
         """Update if user has interacted with button"""
@@ -104,12 +125,12 @@ class Button(ButtonBase):
             if click[0] == 1 and self.action != None:
                 self.state = 2
                 self.UpdateToScreen(self.clickColor)
-                self.action()
-
+                
         elif self.state == 2 and pygame.mouse.get_pressed()[0] == 0:
             #Mouse has stopped holding down click so turn button to normal color
             self.UpdateToScreen(self.normalColor)
             self.state = 0
+            self.action()
 
     #Draws initual button state
     def DrawButton(self):
@@ -125,7 +146,9 @@ class ButtonImage(ButtonBase):
     def __init__(self, x, y, w, h, normalImagePath, hoverImagePath, clickedImagePath, display, textObject, action=None, autoFontSize=False, pos='topleft'):
         normalColor = Colors.A_black
         self.pos = pos
-        if self.pos == 'topright':
+
+        #Set realitive Rect position depending on what the user wants
+        if self.pos == 'topright': 
             x = x - w
         elif self.pos == 'bottomright':
             x = x - w
@@ -148,15 +171,16 @@ class ButtonImage(ButtonBase):
         self.image = pygame.Surface((self.w,self.h))  # Create image surface
         self.image.blit(self.gameDisplay,(0,0),((self.x,self.y),(self.w,self.h)))  # Blit portion of the display to the image
            
-
         self.state = 1
         self.normalImage = ImageManager.ImageType(normalImagePath,display)
         self.hoverImage = ImageManager.ImageType(hoverImagePath,display)
         self.clickedImage = ImageManager.ImageType(clickedImagePath,display)
         self.UpdateImageScales()
         self.normalTextSize = self.textObject.size
+        self.UpdateToScreenImage("Normal")
 
     def UpdateImageScales(self):
+        """Updates the scales of hover,normal,clicked images based on the button box size"""
         self.normalImage.Scale((self.w/self.normalImage.getW())*0.9,(self.h/self.normalImage.getH())*0.9)
         self.hoverImage.Scale(self.w/self.hoverImage.getW(),self.h/self.hoverImage.getH())
         self.clickedImage.Scale(self.w/self.clickedImage.getW(),self.h/self.clickedImage.getH())
@@ -213,12 +237,13 @@ class ButtonImage(ButtonBase):
             if click[0] == 1 and self.action != None:
                 self.state = 2
                 self.UpdateToScreenImage("Clicked")
-                self.action()
+                
 
         elif self.state == 2 and pygame.mouse.get_pressed()[0] == 0:
             #Mouse has stopped holding down click so turn button to normal color
             self.UpdateToScreenImage("Normal")
             self.state = 0
+            self.action()
 
     #Draws initual button state
     def DrawButton(self):

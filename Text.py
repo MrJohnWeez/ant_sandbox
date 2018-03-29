@@ -43,6 +43,12 @@ class Text:
             self.TextRect.y = self.y - self.TextRect.h
         elif self.pos == 'center':
             self.TextRect.center = (self.x,self.y)
+        elif self.pos == 'bottomcenter':
+            self.TextRect.x = self.x - self.TextRect.w//2
+            self.TextRect.y = self.y - self.TextRect.h
+        elif self.pos == 'topcenter':
+            self.TextRect.x = self.x - self.TextRect.w//2
+            self.TextRect.y = self.y
         else:
             print("Error: ", self.pos, " is not a valid text position")
 
@@ -92,6 +98,23 @@ class Text:
         return self.TextRect
     def GetText(self):
         return self.text
-
+    def getTopLeft(self):
+        """Returns top left cornner cordinate"""
+        return (self.GetX(), self.GetY())
+    def getTopRight(self):
+        """Returns top right cornner cordinate"""
+        return (self.GetX()+self.GetY(), self.GetY())
+    def getBottomLeft(self):
+        """Returns bottom left cornner cordinate"""
+        return (self.GetX(), self.GetY()+self.GetHieght())
+    def getBottomRight(self):
+        """Returns bottom right cornner cordinate"""
+        return (self.GetX()+self.GetWidth(), self.GetY()+self.GetHieght())
+    def getCenter(self):
+        return (self.GetX()+self.GetWidth()//2,self.GetY()+self.GetHieght()//2)
+    def getTopCenter(self):
+        return (self.GetX()+self.GetWidth()//2,self.GetY())
+    def getBottomCenter(self):
+        return (self.GetX()+self.GetWidth()//2,self.GetY()+self.GetHieght())
 
 

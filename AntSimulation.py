@@ -1,14 +1,19 @@
+#Built in
 import random
 import time
 import pygame
+import subprocess
+import webbrowser
+import sys
 
 """
 ToDo List:
--Fill out about menu (1 hour)
 -Make antSim menu cleaner (4 hours)
--Make a button for clearing just the ants (20 mins)
--Make a button for clearing just the paths (20 mins)
--Make a back to menu button on about,ant sim (20 mins)
+    -Change almost all buttons to image buttons (1.2 hours)
+    -Create art for each button (2 hours)
+    -Make a button for clearing just the ants (20 mins)
+    -Make a button for clearing just the paths (20 mins)
+    -Make a back to menu button on about,ant sim (20 mins)
 -Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
 202 noraml ants ~= 500 fps
 """
@@ -26,7 +31,6 @@ import Text
 global BNFont,screenH,screenW
 global MenuX,MenuY,MenuW,MenuH
 global gameDisplay
-global mouse
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
@@ -125,7 +129,12 @@ class StepBoxes:
         return (self.getX()+self.getW(), self.getY()+self.getH())
 
 
-
+def LoadMJWLink():
+    url = 'https://mrjohnweez.weebly.com'
+    if sys.platform == 'darwin':    # in case of OS X
+        subprocess.Popen(['open', url])
+    else:
+        webbrowser.open_new_tab(url)
     
 #Simulation Functions
 def QuitSim():
@@ -254,8 +263,6 @@ class ToolType:
 
 
 
-
-
 def AntSimulation():
     """Main ant simulation loop"""
     simulationSpeed = SimSpeed(1,1,4096)
@@ -303,8 +310,6 @@ def AntSimulation():
         """Decreases the simulation speed by a factor of double the prevous value"""
         simulationSpeed.Increase()
         bSpeed.ChangeMsg("x"+str(simulationSpeed.value))
-
-
 
     #Define Buttons
     T_clear = Text.Text("Clear",BNFont,20,Colors.A_black,MenuX,MenuY,gameDisplay)
@@ -384,9 +389,11 @@ def AntSimulation():
                 Bn.DrawButton()
         Ant.Ant.KillAllAnts()
         pygame.display.update()
+
+
+    
     #Set up Simulation for setup
     ResetSim()
-
 
     #Main loop
     while True:
@@ -427,9 +434,8 @@ def AntSimulation():
                 pygame.time.set_timer(spawn_Event, SpawnRate)
                 tool.UseTool()
 
-
             #Press 'C' to clear ants and screen
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c: clearSim()
                 if event.key == pygame.K_p:
                     bPause.action()
@@ -449,6 +455,7 @@ def AntSimulation():
                     T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
                     
                 pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
+
 
 
 def MainMenu():
@@ -477,18 +484,15 @@ def MainMenu():
 
     while go:
         #Check for Button interaction
-        for button in buttons:
-            button.Update()
+        for button in buttons: button.Update()
 
         for event in pygame.event.get():
             #Quit Game
             if event.type == pygame.QUIT: QuitSim()
                 
-
-            #Press 'C' to clear ants and screen
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_z:
-                    print("temp")
+                if event.key == pygame.K_ESCAPE:
+                    QuitSim()
 
 
 def AboutMenu():
@@ -502,29 +506,26 @@ def AboutMenu():
     aboutMenuTitle.AutoScale(screenW,screenH,2,0.7)
     aboutMenuTitle.Draw((screenW//2,screenH//8))
     
-    
-    spacing = 25
+    #Display all text
+    T_About1 = Text.Text("Game created by: John Wiesner ",BNFont,25,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center")
+
+    T_ClickBait = Text.Text("MrJohnWeez",BNFont,25,Colors.A_RichBlueGreen,T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],gameDisplay)
+    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],120,30, Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter")
+   
+    T_About2 = Text.Text("Special thanks to Chuck Conner as alpha tester",BNFont,20,Colors.A_white,bClickBait.getBottomCenter()[0],bClickBait.getBottomCenter()[1],gameDisplay,pos="topcenter")
+    T_About3 = Text.Text("©2018",BNFont,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
+
     T_Back = Text.Text("Back",BNFont,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
     B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Back,MainMenu,pos="bottomcenter")
 
-
-    buttons += [B_Back]
+    TextList = [T_About1,T_About2,T_About3]
+    buttons += [B_Back,bClickBait]
+    for i in TextList: i.AddText(forceUpdate=True)
     
-    
-
     while go:
         #Check for Button interaction
-        for button in buttons:
-            button.Update()
-
-        for event in pygame.event.get():
-            #Quit Game
+        for button in buttons: button.Update()
+        for event in pygame.event.get(): 
             if event.type == pygame.QUIT: QuitSim()
-                
-
-            #Press 'C' to clear ants and screen
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_z:
-                    print("temp")
 
 MainMenu()
