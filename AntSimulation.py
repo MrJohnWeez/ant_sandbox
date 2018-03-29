@@ -1,15 +1,15 @@
+import random
 import time
 import pygame
-import random
+
 """
 ToDo List:
--Make button art for menu
--Make about menu
--Make antSim menu cleaner
--Make a button for clearing just the ants
--Make a button for clearing just the paths
--Make a back to menu button on about,ant sim
--Add Sounds (When you place an ant,  hit clear, ect)
+-Fill out about menu (1 hour)
+-Make antSim menu cleaner (4 hours)
+-Make a button for clearing just the ants (20 mins)
+-Make a button for clearing just the paths (20 mins)
+-Make a back to menu button on about,ant sim (20 mins)
+-Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
 202 noraml ants ~= 500 fps
 """
 
@@ -18,8 +18,10 @@ import Ant
 import AntStepVar
 import Colors
 import CustomPath
+import ImageManager
 import Interactive
 import Text
+
 #Globals
 global BNFont,screenH,screenW
 global MenuX,MenuY,MenuW,MenuH
@@ -28,7 +30,11 @@ global mouse
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
-mainMenuBG = CustomPath.Path("assets\TempBackground.png")
+
+#Image Paths
+ButtonBlueNormal = CustomPath.Path("assets\BlueButtonNormal.png")
+ButtonBlueLight = CustomPath.Path("assets\BlueButtonLight.png")
+ButtonBlueDark = CustomPath.Path("assets\BlueButtonDark.png")
 
 #Define Screen
 screenH = 600
@@ -443,52 +449,30 @@ def AntSimulation():
                     T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
                     
                 pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
-class ImageType:
-    def __init__(self,path,display,scale=1):
-        self.image = pygame.image.load(path)
-        self.currScale = scale
-        self.display = display
-        self.imgRect = self.image.get_rect()
-        self.Scale(scale)
-
-    def Draw(self,pos):
-        gameDisplay.blit(self.image, (pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2))
-        pygame.display.update(pygame.Rect(pos[0]-self.imgRect.w//2,pos[1]-self.imgRect.h//2,self.imgRect.w,self.imgRect.h))
-
-    def Scale(self, newScale=1):
-        r = self.image.get_rect()
-        self.image = pygame.transform.scale(self.image, (int(r.w*newScale),int(r.h*newScale)))
-        self.imgRect = self.image.get_rect()
-
-
-
 
 
 def MainMenu():
     """Main menu"""
-    mainMenuTitle = ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay,0.65)
+    mainMenuTitle = ImageManager.ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay)
     go = True
     buttons = []
 
-    Colors.fill_gradient(gameDisplay,Colors.A_black,Colors.A_white,forward=False)
+    gameDisplay.fill(Colors.A_black)
     pygame.display.update()
+    mainMenuTitle.AutoScale(screenW,screenH,0.1,0.1)
     mainMenuTitle.Draw((screenW//2,screenH//4))
     
+    spacing = 25
+    T_Play = Text.Text("Play",BNFont,30,Colors.A_white,screenW//2,int(screenH*.5),gameDisplay)
+    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Play,AntSimulation,pos="center")
 
-    T_Play = Text.Text("Play",BNFont,30,Colors.A_black,screenW//3.6,int(screenH*.7),gameDisplay)
-    B_Play = Interactive.Button(T_Play.GetX(),T_Play.GetY(),100,50, Colors.A_RichGreen, gameDisplay, T_Play, AntSimulation)
+    T_About = Text.Text("About",BNFont,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
+    B_About = Interactive.ButtonImage(T_About.GetX(),T_About.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_About,AboutMenu,pos="center")
 
-    T_About = Text.Text("About",BNFont,30,Colors.A_black,B_Play.getTopRight()[0]+175,B_Play.getTopRight()[1],gameDisplay)
-    B_About = Interactive.Button(T_About.GetX(),T_About.GetY(),100,50, Colors.A_RichBlueGreen, gameDisplay, T_About, AboutMenu)
+    T_Quit = Text.Text("Quit",BNFont,30,Colors.A_white,B_About.getCenter()[0],B_About.getBottomLeft()[1]+spacing,gameDisplay)
+    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Quit,QuitSim,pos="center")
 
-    T_Quit = Text.Text("Quit",BNFont,20,Colors.A_black,screenW,0,gameDisplay)
-    B_Quit = Interactive.Button(screenW-T_Quit.GetWidth()-10,0,T_Quit.GetWidth()+10,T_Quit.GetHieght(), Colors.A_Fire, gameDisplay, T_Quit, QuitSim)
-
-    T_Test = Text.Text("Test",BNFont,20,Colors.A_black,100,100,gameDisplay)
-    B_Test = Interactive.ButtonImage(100,100,100,50,CustomPath.Path("assets\TestButton.png"),CustomPath.Path("assets\TestButtonHover.png"),CustomPath.Path("assets\TestButtonClicked.png"),gameDisplay,T_Test,lambda: print("hello"))
-
-    buttons += [B_Play,B_Quit,B_About,B_Test]
-    
+    buttons += [B_Play,B_Quit,B_About]
     
 
     while go:
@@ -509,22 +493,22 @@ def MainMenu():
 
 def AboutMenu():
     """About menu"""
-    aboutMenuTitle = ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay,0.3)
+    aboutMenuTitle = ImageManager.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
     go = True
     buttons = []
 
-    Colors.fill_gradient(gameDisplay,Colors.A_Water,Colors.A_white,forward=False)
+    gameDisplay.fill(Colors.A_black)
     pygame.display.update()
-    aboutMenuTitle.Draw((screenW//2,screenH//4))
+    aboutMenuTitle.AutoScale(screenW,screenH,2,0.7)
+    aboutMenuTitle.Draw((screenW//2,screenH//8))
     
+    
+    spacing = 25
+    T_Back = Text.Text("Back",BNFont,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
+    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Back,MainMenu,pos="bottomcenter")
 
-    T_About = Text.Text("Back",BNFont,30,Colors.A_black,0,0,gameDisplay)
-    B_About = Interactive.Button(T_About.GetX(),T_About.GetY(),100,50, Colors.A_clearN, gameDisplay, T_About, MainMenu)
 
-    T_Quit = Text.Text("Quit",BNFont,20,Colors.A_black,screenW,0,gameDisplay)
-    B_Quit = Interactive.Button(screenW-T_Quit.GetWidth()-10,0,T_Quit.GetWidth()+10,T_Quit.GetHieght(), Colors.A_Fire, gameDisplay, T_Quit, QuitSim)
-
-    buttons += [B_Quit,B_About]
+    buttons += [B_Back]
     
     
 
@@ -543,61 +527,4 @@ def AboutMenu():
                 if event.key == pygame.K_z:
                     print("temp")
 
-#AntSimulation()
 MainMenu()
-
-
-
-
-
-
-
-
-
-
-
-# def AAfilledRoundedRect(surface,rect,color,radius=0.4):
-    
-#     """
-#     AAfilledRoundedRect(surface,rect,color,radius=0.4)
-
-#     surface : destination
-#     rect    : rectangle
-#     color   : rgb or rgba
-#     radius  : 0 <= radius <= 1
-#     """
-
-#     rect         = Rect(rect)
-#     color        = Color(*color)
-#     alpha        = color.a
-#     color.a      = 0
-#     pos          = rect.topleft
-#     rect.topleft = 0,0
-#     rectangle    = Surface(rect.size,SRCALPHA)
-
-#     circle       = Surface([min(rect.size)*3]*2,SRCALPHA)
-#     draw.ellipse(circle,(0,0,0),circle.get_rect(),0)
-#     circle       = transform.smoothscale(circle,[int(min(rect.size)*radius)]*2)
-
-#     radius              = rectangle.blit(circle,(0,0))
-#     radius.bottomright  = rect.bottomright
-#     rectangle.blit(circle,radius)
-#     radius.topright     = rect.topright
-#     rectangle.blit(circle,radius)
-#     radius.bottomleft   = rect.bottomleft
-#     rectangle.blit(circle,radius)
-
-#     rectangle.fill((0,0,0),rect.inflate(-radius.w,0))
-#     rectangle.fill((0,0,0),rect.inflate(0,-radius.h))
-
-#     rectangle.fill(color,special_flags=BLEND_RGBA_MAX)
-#     rectangle.fill((255,255,255,alpha),special_flags=BLEND_RGBA_MIN)
-
-#     return surface.blit(rectangle,pos)
-
-# if __name__ == "__main__":
-#     scr = display.set_mode((300,300))
-#     scr.fill(-1)
-#     AAfilledRoundedRect(scr,(50,50,200,50),(200,20,20),0.5)
-#     display.flip()
-#     while event.wait().type != QUIT: pass
