@@ -34,6 +34,7 @@ global gameDisplay
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
+Rubik = CustomPath.Path("assets\Rubik-Regular.ttf")
 
 #Image Paths
 ButtonBlueNormal = CustomPath.Path("assets\BlueButtonNormal.png")
@@ -470,16 +471,21 @@ def MainMenu():
     mainMenuTitle.Draw((screenW//2,screenH//4))
     
     spacing = 25
-    T_Play = Text.Text("Play",BNFont,30,Colors.A_white,screenW//2,int(screenH*.5),gameDisplay)
+    T_Play = Text.Text("Play",Rubik,30,Colors.A_white,screenW//2,int(screenH*.5),gameDisplay)
     B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Play,AntSimulation,pos="center")
 
-    T_About = Text.Text("About",BNFont,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
+    T_About = Text.Text("About",Rubik,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
     B_About = Interactive.ButtonImage(T_About.GetX(),T_About.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_About,AboutMenu,pos="center")
 
-    T_Quit = Text.Text("Quit",BNFont,30,Colors.A_white,B_About.getCenter()[0],B_About.getBottomLeft()[1]+spacing,gameDisplay)
+    T_Quit = Text.Text("Quit",Rubik,30,Colors.A_white,B_About.getCenter()[0],B_About.getBottomLeft()[1]+spacing,gameDisplay)
     B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Quit,QuitSim,pos="center")
 
+    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
+
     buttons += [B_Play,B_Quit,B_About]
+    TextList = [T_Copyright]
+    for i in TextList: i.AddText(forceUpdate=True)
+
     
 
     while go:
@@ -507,18 +513,18 @@ def AboutMenu():
     aboutMenuTitle.Draw((screenW//2,screenH//8))
     
     #Display all text
-    T_About1 = Text.Text("Game created by: John Wiesner ",BNFont,25,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center")
+    T_About1 = Text.Text("Game created by: John Wiesner ",Rubik,25,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center")
 
-    T_ClickBait = Text.Text("MrJohnWeez",BNFont,25,Colors.A_RichBlueGreen,T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],gameDisplay)
-    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],120,30, Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter")
+    T_ClickBait = Text.Text("MrJohnWeez",Rubik,22,Colors.A_RichBlueGreen,T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],gameDisplay)
+    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter")
    
-    T_About2 = Text.Text("Special thanks to Chuck Conner as alpha tester",BNFont,20,Colors.A_white,bClickBait.getBottomCenter()[0],bClickBait.getBottomCenter()[1],gameDisplay,pos="topcenter")
-    T_About3 = Text.Text("©2018",BNFont,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
+    T_About2 = Text.Text("Special thanks to Chuck Conner as alpha tester",Rubik,20,Colors.A_white,bClickBait.getBottomCenter()[0],bClickBait.getBottomCenter()[1]+10,gameDisplay,pos="topcenter")
+    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
-    T_Back = Text.Text("Back",BNFont,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
+    T_Back = Text.Text("Back",Rubik,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
     B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Back,MainMenu,pos="bottomcenter")
 
-    TextList = [T_About1,T_About2,T_About3]
+    TextList = [T_About1,T_About2,T_Copyright]
     buttons += [B_Back,bClickBait]
     for i in TextList: i.AddText(forceUpdate=True)
     
