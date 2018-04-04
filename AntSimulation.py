@@ -8,12 +8,17 @@ import sys
 
 """
 ToDo List:
--Make antSim menu cleaner (4 hours)
-    -Change almost all buttons to image buttons (1.2 hours)
-    -Create art for each button (2 hours)
-    -Make a button for clearing just the ants (20 mins)
-    -Make a button for clearing just the paths (20 mins)
-    -Make a back to menu button on about,ant sim (20 mins)
+-Create Short Color buttons for: (1.5 hours)
+    -LightGray
+    -White
+    -Darker blue
+    -LightBrown
+    -Lava like
+    -Rich Green
+    -lightPurple
+    -Yellow
+-Convert all ant buttons to image buttons and reposition them (2 hours)
+-Slightly adjust AntSteps box (30 min)
 -Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
 202 noraml ants ~= 500 fps
 """
@@ -36,10 +41,38 @@ global gameDisplay
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
 Rubik = CustomPath.Path("assets\Rubik-Regular.ttf")
 
+AspectLong = 480/110
+AspectShort = 242/107
+AspectMini = 154/104
+
 #Image Paths
-ButtonBlueNormal = CustomPath.Path("assets\BlueButtonNormal.png")
-ButtonBlueLight = CustomPath.Path("assets\BlueButtonLight.png")
-ButtonBlueDark = CustomPath.Path("assets\BlueButtonDark.png")
+temp1 = CustomPath.Path("assets\Buttons\BNLongBlue.png")
+temp2 = CustomPath.Path("assets\Buttons\BLLongBlue.png")
+temp3 = CustomPath.Path("assets\Buttons\BDLongBlue.png")
+IBLongBlue = [temp2,temp1,temp3]
+
+temp1 = CustomPath.Path("assets\Buttons\BNLongRed.png")
+temp2 = CustomPath.Path("assets\Buttons\BLLongRed.png")
+temp3 = CustomPath.Path("assets\Buttons\BDLongRed.png")
+IBLongRed = [temp2,temp1,temp3]
+
+temp1 = CustomPath.Path("assets\Buttons\BNShortRed.png")
+temp2 = CustomPath.Path("assets\Buttons\BLShortRed.png")
+temp3 = CustomPath.Path("assets\Buttons\BDShortRed.png")
+IBShortRed = [temp2,temp1,temp3]
+
+temp1 = CustomPath.Path("assets\Buttons\BNShortBlue.png")
+temp2 = CustomPath.Path("assets\Buttons\BLShortBlue.png")
+temp3 = CustomPath.Path("assets\Buttons\BDShortBlue.png")
+IBShortBlue = [temp2,temp1,temp3]
+
+temp1 = CustomPath.Path("assets\Buttons\BNShortLightGreen.png")
+temp2 = CustomPath.Path("assets\Buttons\BLShortLightGreen.png")
+temp3 = CustomPath.Path("assets\Buttons\BDShortLightGreen.png")
+IBShortLightGreen = [temp2,temp1,temp3]
+
+Test1 = CustomPath.Path("assets\Buttons\ButtonBackgroundShort1.png")
+Test2 = CustomPath.Path("assets\Buttons\ButtonBackgroundShort2.png")
 
 #Define Screen
 screenH = 600
@@ -105,11 +138,11 @@ class StepBoxes:
         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
         T_random = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
         B_random = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_random, lambda: self.randomFunction(self.updateVars,self.boxObjects))
-        T_reset = Text.Text("C",BNFont,20,Colors.A_black,B_random.getTopRight()[0],relY,self.Gdisplay)
-        B_reset = Interactive.Button(B_random.getTopRight()[0]+5,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_reset, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+        T_resetAntStep = Text.Text("C",BNFont,20,Colors.A_black,B_random.getTopRight()[0],relY,self.Gdisplay)
+        B_resetAntStep = Interactive.Button(B_random.getTopRight()[0]+5,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_resetAntStep, lambda: self.clearFunction(self.updateVars,self.boxObjects))
 
-        self.buttonObjects = [B_reset,B_random]
-        self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_reset.x+B_reset.w))
+        self.buttonObjects = [B_resetAntStep,B_random]
+        self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_resetAntStep.x+B_resetAntStep.w))
 
 
     def getX(self):
@@ -286,40 +319,70 @@ def AntSimulation():
     antSpeed = AntSpeed(Ant.Ant.maxSpeed-1000,1,Ant.Ant.maxSpeed)
     isPaused = ToggleVar()
 
-    T_Watermark = Text.Text("By: MrJohnWeez",BNFont,16,Colors.A_white,1,screenH+3,gameDisplay,True,"bottomleft",Colors.A_optionsBg)
-    T_AntCount = Text.Text("0/"+str(Ant.Ant.antLimit),BNFont,20,Colors.A_white,1,screenH+3-16,gameDisplay,True,"bottomleft",Colors.A_optionsBg)
-    texts += [T_Watermark,T_AntCount]
-
-    tool = ToolType("Ant",antSteps,antSpeed,T_AntCount,isPaused)
-    
 
     #Button Functions
     def togglePause():
         """Changes the pause state of the game. Also updates the toggle button"""
         isPaused.ToggleState()
         bPause.ChangeMsg("Play") if isPaused.state else bPause.ChangeMsg("Pause")
-        bPause.ForceUpdate(isPaused.state)
 
-    def clearSim():
+    def ClearSim():
         """Clears the entire ant screen of any ants and their paths"""
         Ant.Ant.KillAllAnts()
         pygame.draw.rect(gameDisplay, Colors.A_white, pygame.Rect(MenuW,0,screenW,screenH))
         pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
         T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
+    def ClearPaths():
+        """Clears the entire ant screen of any ant paths"""
+        pygame.draw.rect(gameDisplay, Colors.A_white, pygame.Rect(MenuW,0,screenW,screenH))
+        pygame.display.update(pygame.Rect(MenuW,0,screenW,screenH))
 
     def speedButton():
         """Decreases the simulation speed by a factor of double the prevous value"""
         simulationSpeed.Increase()
         bSpeed.ChangeMsg("x"+str(simulationSpeed.value))
 
+
+    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft",backgroundColor=Colors.A_black)
+    T_AntCount = Text.Text("0/"+str(Ant.Ant.antLimit),BNFont,20,Colors.A_white,MenuW,screenH,gameDisplay,True,"bottomright",Colors.A_black)
+    texts += [T_Copyright,T_AntCount]
+
+
     #Define Buttons
-    T_clear = Text.Text("Clear",BNFont,20,Colors.A_black,MenuX,MenuY,gameDisplay)
-    bClear = Interactive.Button(MenuX,MenuY,100,50, Colors.A_clearN, gameDisplay, T_clear, clearSim)
-    T_pause = Text.Text("Pause",BNFont,20,Colors.A_black,MenuX,MenuY+60,gameDisplay)
-    bPause = Interactive.ButtonToggle(MenuX,MenuY+60,100,50, Colors.A_clearN, gameDisplay, T_pause, togglePause)
-    T_Speed = Text.Text("x"+str(simulationSpeed.value),BNFont,20,Colors.A_black,MenuX,MenuY+120,gameDisplay)
-    bSpeed = Interactive.Button(MenuX,MenuY+120,100,50, Colors.A_clearN, gameDisplay, T_Speed, speedButton)
-    buttons += [bClear,bPause,bSpeed]
+    T_mainmenu = Text.Text("Back",Rubik,21,Colors.A_white,T_Copyright.getTopLeft()[0],T_Copyright.getTopLeft()[1],gameDisplay)
+    tempHeight = T_mainmenu.GetHieght()+4
+    B_mainmenu = Interactive.ButtonImage(T_mainmenu.GetX(),T_mainmenu.GetY(),int(tempHeight*AspectShort),tempHeight,IBShortBlue[1],IBShortBlue[0],IBShortBlue[2],gameDisplay,T_mainmenu,MainMenu,pos="bottomleft")
+    
+    T_reset = Text.Text("Reset",Rubik,20,Colors.A_white,MenuW,MenuY,gameDisplay)
+    tempHeight = T_reset.GetHieght()+4
+    B_reset = Interactive.ButtonImage(T_reset.GetX(),T_reset.GetY(),int(tempHeight*AspectShort),tempHeight,IBShortRed[1],IBShortRed[0],IBShortRed[2],gameDisplay,T_reset,ClearSim,pos="topright")
+    
+    T_kill = Text.Text("Kill",Rubik,20,Colors.A_white,B_reset.getBottomRight()[0],B_reset.getBottomRight()[1],gameDisplay)
+    tempHeight = T_kill.GetHieght()+4
+    B_kill = Interactive.ButtonImage(T_kill.GetX(),T_kill.GetY(),int(tempHeight*AspectShort),tempHeight,IBShortRed[1],IBShortRed[0],IBShortRed[2],gameDisplay,T_kill,Ant.Ant.KillAllAnts,pos="topright")
+    
+    T_clearPath = Text.Text("Clear",Rubik,20,Colors.A_white,B_kill.getBottomRight()[0],B_kill.getBottomRight()[1],gameDisplay)
+    tempHeight = T_clearPath.GetHieght()+4
+    B_clearPath = Interactive.ButtonImage(T_clearPath.GetX(),T_clearPath.GetY(),int(tempHeight*AspectShort),tempHeight,IBShortRed[1],IBShortRed[0],IBShortRed[2],gameDisplay,T_clearPath,ClearPaths,pos="topright")
+    
+    buttons += [B_mainmenu,B_reset,B_kill,B_clearPath]
+    
+    
+    T_pause = Text.Text("Pause",Rubik,20,Colors.A_white,MenuX,MenuY,gameDisplay)
+    tempHeight = T_pause.GetHieght()+7
+    bPause = Interactive.ButtonImage(T_pause.GetX(),T_pause.GetY(),int(tempHeight*AspectShort),tempHeight,IBShortLightGreen[1],IBShortLightGreen[0],IBShortLightGreen[2],gameDisplay,T_pause,togglePause,pos="topleft")
+
+    T_speedLabel1 = Text.Text("Times",Rubik,18,Colors.A_white,bPause.getBottomRight()[0]-15,bPause.getBottomRight()[1]+5,gameDisplay,pos="topcenter")
+    T_speedLabel2 = Text.Text("Slower:",Rubik,18,Colors.A_white,T_speedLabel1.getBottomCenter()[0],T_speedLabel1.getBottomCenter()[1],gameDisplay,pos="topcenter")
+
+    T_Speed = Text.Text("x"+str(simulationSpeed.value),Rubik,19,Colors.A_white,T_speedLabel2.getBottomCenter()[0]+7,T_speedLabel2.getBottomCenter()[1],gameDisplay,pos="topcenter")
+    tempHeight = T_Speed.GetHieght()+8
+    bSpeed = Interactive.ButtonImage(T_Speed.GetX(),T_Speed.GetY(),int(tempHeight*AspectShort),tempHeight,Test1,Test1,Test1,gameDisplay,T_Speed,speedButton,pos="topcenter")
+
+    texts += [T_speedLabel1,T_speedLabel2]
+    buttons += [bPause,bSpeed]
+
+    tool = ToolType("Ant",antSteps,antSpeed,T_AntCount,isPaused)
 
     def UpdateStepVar(var, textBox):
         """Updates the varible and the text box for one of the four input boxes"""
@@ -372,8 +435,9 @@ def AntSimulation():
     def ResetSim():
         """Make the state of the simulation new."""
         pygame.draw.rect(gameDisplay, Colors.A_white, pygame.Rect(MenuW,0,screenW,screenH))
-        pygame.draw.rect(gameDisplay, Colors.A_optionsBg, (0,0,MenuW,MenuH))
+        pygame.draw.rect(gameDisplay, Colors.A_black, (0,0,MenuW,MenuH))
 
+        bSpeed.UpdateBackground()
         #Reset buttons
         for button in buttons:
             button.DrawButton()
@@ -390,18 +454,20 @@ def AntSimulation():
                 Bn.DrawButton()
         Ant.Ant.KillAllAnts()
         pygame.display.update()
+        
 
 
     
     #Set up Simulation for setup
     ResetSim()
-
+    
     #Main loop
     while True:
         #Check for Button interaction
         mouse = pygame.mouse.get_pos()
         mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
         if mouseOverMenu:
+            
             for button in buttons:
                 button.Update()
             for sbox in stepBoxes:
@@ -437,12 +503,13 @@ def AntSimulation():
 
             #Press 'C' to clear ants and screen
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_c: clearSim()
+                if event.key == pygame.K_c: ClearSim()
                 if event.key == pygame.K_p:
                     bPause.action()
                 if event.key == pygame.K_z:
                     #print(Ant.Ant.GetAntCount())
                     print(clock.get_fps())
+                    
 
         # Move every ant, if correct simulation timing and if not paused 
         TicksLeft -= 1
@@ -472,13 +539,13 @@ def MainMenu():
     
     spacing = 25
     T_Play = Text.Text("Play",Rubik,30,Colors.A_white,screenW//2,int(screenH*.5),gameDisplay)
-    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Play,AntSimulation,pos="center")
+    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,IBLongBlue[1],IBLongBlue[0],IBLongBlue[2],gameDisplay,T_Play,AntSimulation,pos="center")
 
     T_About = Text.Text("About",Rubik,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
-    B_About = Interactive.ButtonImage(T_About.GetX(),T_About.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_About,AboutMenu,pos="center")
+    B_About = Interactive.ButtonImage(T_About.GetX(),T_About.GetY(),int(50*4.3),50,IBLongBlue[1],IBLongBlue[0],IBLongBlue[2],gameDisplay,T_About,AboutMenu,pos="center")
 
     T_Quit = Text.Text("Quit",Rubik,30,Colors.A_white,B_About.getCenter()[0],B_About.getBottomLeft()[1]+spacing,gameDisplay)
-    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Quit,QuitSim,pos="center")
+    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,IBLongBlue[1],IBLongBlue[0],IBLongBlue[2],gameDisplay,T_Quit,QuitSim,pos="center")
 
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
@@ -522,7 +589,7 @@ def AboutMenu():
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
     T_Back = Text.Text("Back",Rubik,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
-    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,ButtonBlueNormal,ButtonBlueLight,ButtonBlueDark,gameDisplay,T_Back,MainMenu,pos="bottomcenter")
+    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IBLongBlue[1],IBLongBlue[0],IBLongBlue[2],gameDisplay,T_Back,MainMenu,pos="bottomcenter")
 
     TextList = [T_About1,T_About2,T_Copyright]
     buttons += [B_Back,bClickBait]

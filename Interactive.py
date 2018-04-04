@@ -169,7 +169,8 @@ class ButtonImage(ButtonBase):
             self.AutoFont()
 
         self.image = pygame.Surface((self.w,self.h))  # Create image surface
-        self.image.blit(self.gameDisplay,(0,0),((self.x,self.y),(self.w,self.h)))  # Blit portion of the display to the image
+        self.UpdateBackground()
+        
            
         self.state = 1
         self.normalImage = ImageManager.ImageType(normalImagePath,display)
@@ -185,7 +186,8 @@ class ButtonImage(ButtonBase):
         self.hoverImage.Scale(self.w/self.hoverImage.getW(),self.h/self.hoverImage.getH())
         self.clickedImage.Scale(self.w/self.clickedImage.getW(),self.h/self.clickedImage.getH())
 
-
+    def UpdateBackground(self):
+        self.image.blit(self.gameDisplay,(0,0),((self.x,self.y),(self.w,self.h)))  # Blit portion of the display to the image
 
     def UpdateToScreenImage(self, buttonImageType):
         """Draw image button on screen"""
