@@ -8,15 +8,6 @@ import sys
 
 """
 ToDo List:
--Load all color buttons: (1 hour)
-    -LightGray
-    -White
-    -Darker blue
-    -LightBrown
-    -Lava like
-    -Rich Green
-    -lightPurple
-    -Yellow
 -Convert all ant buttons to image buttons and reposition them (2 hours)
 -Slightly adjust AntSteps box (30 min)
 -Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
@@ -76,7 +67,7 @@ class StepBoxes:
         titleColor = Colors.A_white
         boxColor = Colors.A_white
         boxTextColor = Colors.A_white
-        menuBG = Colors.A_optionsBg
+        menuBG = Colors.A_black
 
         #Text lables
         T_Title = Text.Text("Ant Steps",self.fontPath,fontSize,titleColor,self.x,self.y,self.Gdisplay,True,"bottomleft")
@@ -374,8 +365,8 @@ def AntSimulation():
             boxVars[i].updateText(str(varList[i].GetValue()))
         
     #Ant step boxes module
-    StepBox1 = StepBoxes(50,screenH+3-200,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, antSteps.GetGroup(), antSpeed.UpdateAntSpeed)
-    stepBoxes = [StepBox1]
+    StepBox1 = StepBoxes(MenuW//2.6,screenH-180,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, antSteps.GetGroup(), antSpeed.UpdateAntSpeed)
+    stepBoxesList = [StepBox1]
 
 
     #Right Side
@@ -413,7 +404,7 @@ def AntSimulation():
             box.update()
         for text in texts:
             text.AddText(forceUpdate=True)
-        for sbox in stepBoxes:
+        for sbox in stepBoxesList:
             for T in sbox.textObjects:
                 T.AddText(forceUpdate=True)
             for B in sbox.boxObjects:
@@ -438,7 +429,7 @@ def AntSimulation():
             
             for button in buttons:
                 button.Update()
-            for sbox in stepBoxes:
+            for sbox in stepBoxesList:
                 for Bn in sbox.buttonObjects:
                     Bn.Update()
 
@@ -446,7 +437,7 @@ def AntSimulation():
             for box in input_boxes:
                 box.handle_event(event)
 
-            for sbox in stepBoxes:
+            for sbox in stepBoxesList:
                 for B in sbox.boxObjects:
                     B.handle_event(event)
 
