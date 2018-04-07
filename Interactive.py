@@ -135,6 +135,7 @@ class Button(ButtonBase):
     #Draws initual button state
     def DrawButton(self):
         """ Draws button on command"""
+        self.UpdateToScreen(self.normalColor)
         self.Update()
     
 
@@ -251,6 +252,7 @@ class ButtonImage(ButtonBase):
     def DrawButton(self):
         """ Draws button on command"""
         self.Update()
+        self.UpdateToScreenImage("Normal")
 
 ######################################################################################################################################################################
 

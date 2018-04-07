@@ -8,10 +8,10 @@ import sys
 
 """
 ToDo List:
--Convert all ant buttons to image buttons and reposition them (2 hours)
--Slightly adjust AntSteps box (30 min)
+-Make button colors for both removals (20 mins)
+-Make game scaleable?
 -Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
-202 noraml ants ~= 500 fps
+-Add help menu (4 hours)
 """
 
 #Custom
@@ -230,7 +230,7 @@ class ToolType:
         elif self.activeTool == "CrazyAnt":
             tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
-        elif self.activeTool == "Fill":
+        elif self.activeTool == "RemovePath":
             cubeSize = 15
             x = mouse[0] - cubeSize
             y = mouse[1] - cubeSize
@@ -238,6 +238,12 @@ class ToolType:
             y = clamp(y,0,screenH)
             gameDisplay.fill(Colors.A_white, ((x,y), (cubeSize*2,cubeSize*2)))
             pygame.display.update((x,y), (cubeSize*2,cubeSize*2))
+        elif self.activeTool == "RemoveAnt":
+            cubeSize = 15
+            x = mouse[0] - cubeSize
+            y = mouse[1] - cubeSize
+            x = clamp(x,MenuW,screenW)
+            y = clamp(y,0,screenH)
             Ant.Ant.KillAntsInRect(pygame.Rect(x,y,cubeSize*2,cubeSize*2))
             if self.isPaused.state:
                 Ant.Ant.UpdateAllAnts()
@@ -258,6 +264,10 @@ class ToolType:
 
 def AntSimulation():
     """Main ant simulation loop"""
+    #Clears screen
+    gameDisplay.fill(Colors.A_black)
+    pygame.display.update()
+
     simulationSpeed = SimSpeed(1,1,4096)
     TicksLeft = simulationSpeed.value
 
@@ -368,35 +378,57 @@ def AntSimulation():
     StepBox1 = StepBoxes(MenuW//2.6,screenH-180,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, antSteps.GetGroup(), antSpeed.UpdateAntSpeed)
     stepBoxesList = [StepBox1]
 
+    #aTB_ = Ant Type Buttons
+    aTB_x = MenuW//2
+    aTB_y = MenuH//4
+    aTB_Color = Colors.A_white
+    aTB_fontSize = 20
+    aTB_BtnH = int(21*1.5)
+    aTB_BtnW = int(tempHeight*IM.AspectShort)+17
+    aTB_spacing = 2
 
     #Right Side
-    T_Ant = Text.Text("Ant",BNFont,20,Colors.A_black,1,200,gameDisplay)
-    bAnt = Interactive.Button(1,200,60,20, Colors.A_clearN, gameDisplay, T_Ant, lambda: tool.ChangeTool("Ant"), True)
-    T_AntWater = Text.Text("Water",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
-    bAntWater = Interactive.Button(1,bAnt.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWater, lambda: tool.ChangeTool("WaterAnt"), True)
-    T_FillWhite= Text.Text("Delete Ant",BNFont,20,Colors.A_black,1,bAntWater.getBottomLeft()[1]+5,gameDisplay)
-    bFillWhite = Interactive.Button(1,bAntWater.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_FillWhite, lambda: tool.ChangeTool("Fill"), True)
-    T_AntWood = Text.Text("Wood",BNFont,20,Colors.A_black,1,bFillWhite.getBottomLeft()[1]+5,gameDisplay)
-    bAntWood = Interactive.Button(1,bFillWhite.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntWood, lambda: tool.ChangeTool("WoodAnt"), True)
-    T_AntFire = Text.Text("Fire",BNFont,20,Colors.A_black,1,bAntWood.getBottomLeft()[1]+5,gameDisplay)
-    bAntFire = Interactive.Button(1,bAntWood.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntFire, lambda: tool.ChangeTool("FireAnt"), True)
-    T_AntPlant = Text.Text("Plant",BNFont,20,Colors.A_black,1,bAntFire.getBottomLeft()[1]+5,gameDisplay)
-    bAntPlant = Interactive.Button(1,bAntFire.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntPlant, lambda: tool.ChangeTool("PlantAnt"), True)
+    T_Ant = Text.Text("Ant",Rubik,aTB_fontSize,aTB_Color,aTB_x,aTB_y,gameDisplay)
+    B_Ant = Interactive.ButtonImage(T_Ant.GetX(),T_Ant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortGray[1],IM.IBShortGray[0],IM.IBShortGray[2],gameDisplay,T_Ant,lambda: tool.ChangeTool("Ant"),pos="topright")
+    
+    T_AntWater = Text.Text("Water",Rubik,aTB_fontSize,aTB_Color,B_Ant.getBottomRight()[0],B_Ant.getBottomRight()[1]+aTB_spacing,gameDisplay)
+    B_AntWater = Interactive.ButtonImage(T_AntWater.GetX(),T_AntWater.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortDarkBlue[1],IM.IBShortDarkBlue[0],IM.IBShortDarkBlue[2],gameDisplay,T_AntWater,lambda: tool.ChangeTool("WaterAnt"),pos="topright")
+    
+    T_AntWood = Text.Text("Wood",Rubik,aTB_fontSize,aTB_Color,B_AntWater.getBottomRight()[0],B_AntWater.getBottomRight()[1]+aTB_spacing,gameDisplay)
+    B_AntWood = Interactive.ButtonImage(T_AntWood.GetX(),T_AntWood.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightBrown[1],IM.IBShortLightBrown[0],IM.IBShortLightBrown[2],gameDisplay,T_AntWood,lambda: tool.ChangeTool("WoodAnt"),pos="topright")
+    
+    T_AntFire = Text.Text("Fire",Rubik,aTB_fontSize,aTB_Color,B_AntWood.getBottomRight()[0],B_AntWood.getBottomRight()[1]+aTB_spacing,gameDisplay)
+    B_AntFire = Interactive.ButtonImage(T_AntFire.GetX(),T_AntFire.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLava[1],IM.IBShortLava[0],IM.IBShortLava[2],gameDisplay,T_AntFire,lambda: tool.ChangeTool("FireAnt"),pos="topright")
+    
+    #Left side
+    T_AntPlant = Text.Text("Plant",Rubik,aTB_fontSize,aTB_Color,aTB_x,aTB_y,gameDisplay)
+    B_AntPlant = Interactive.ButtonImage(T_AntPlant.GetX(),T_AntPlant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightGreen[1],IM.IBShortLightGreen[0],IM.IBShortLightGreen[2],gameDisplay,T_AntPlant,lambda: tool.ChangeTool("PlantAnt"),pos="topleft")
+    
+    T_AntZombie = Text.Text("Zombie",Rubik,aTB_fontSize,aTB_Color,B_AntPlant.getBottomLeft()[0],B_AntPlant.getBottomLeft()[1]+aTB_spacing,gameDisplay)
+    B_AntZombie = Interactive.ButtonImage(T_AntZombie.GetX(),T_AntZombie.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortPurple[1],IM.IBShortPurple[0],IM.IBShortPurple[2],gameDisplay,T_AntZombie,lambda: tool.ChangeTool("ZombieAnt"),pos="topleft")
+    
+    T_AntCrazy = Text.Text("Crazy",Rubik,aTB_fontSize,aTB_Color,B_AntZombie.getBottomLeft()[0],B_AntZombie.getBottomLeft()[1]+aTB_spacing,gameDisplay)
+    B_AntCrazy = Interactive.ButtonImage(T_AntCrazy.GetX(),T_AntCrazy.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortYellow[1],IM.IBShortYellow[0],IM.IBShortYellow[2],gameDisplay,T_AntCrazy,lambda: tool.ChangeTool("CrazyAnt"),pos="topleft")
+    
+    
+    #Tools
+    spacingFromTop = 20
+    toolSpacing = 2
+    toolFontSize = 18
+    T_ClearMouse = Text.Text("Remove Path",Rubik,toolFontSize,aTB_Color,B_AntFire.getBottomRight()[0],B_AntFire.getBottomRight()[1]+spacingFromTop,gameDisplay)
+    B_ClearMouse = Interactive.ButtonImage(T_ClearMouse.GetX(),T_ClearMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_ClearMouse,lambda: tool.ChangeTool("RemovePath"),pos="topcenter")
+    
+    T_KillMouse = Text.Text("Remove Ant",Rubik,toolFontSize,aTB_Color,B_ClearMouse.getBottomCenter()[0],B_ClearMouse.getBottomCenter()[1]+toolSpacing,gameDisplay)
+    B_KillMouse = Interactive.ButtonImage(T_KillMouse.GetX(),T_KillMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_KillMouse,lambda: tool.ChangeTool("RemoveAnt"),pos="topcenter")
+    
+    buttons += [B_Ant,B_AntWater,B_AntWood,B_AntFire,B_AntPlant,B_AntZombie,B_AntCrazy,B_ClearMouse,B_KillMouse]
 
-    #Left Side
-    T_AntZombie = Text.Text("Zombie",BNFont,20,Colors.A_black,1,bAnt.getBottomLeft()[1]+5,gameDisplay)
-    bAntZombie = Interactive.Button(bAnt.getTopRight()[0]+5,bAnt.getTopRight()[1],60,20, Colors.A_clearN, gameDisplay, T_AntZombie, lambda: tool.ChangeTool("ZombieAnt"), True)
-    T_AntCrazy = Text.Text("Crazy",BNFont,20,Colors.A_black,1,bAntZombie.getBottomLeft()[1]+5,gameDisplay)
-    bAntCrazy = Interactive.Button(bAnt.getTopRight()[0]+5,bAntZombie.getBottomLeft()[1]+5,60,20, Colors.A_clearN, gameDisplay, T_AntCrazy, lambda: tool.ChangeTool("CrazyAnt"), True)
-
-    buttons += [bAnt,bAntWater,bFillWhite,bAntWood,bAntFire,bAntPlant,bAntZombie,bAntCrazy]
 
     def ResetSim():
         """Make the state of the simulation new."""
         pygame.draw.rect(gameDisplay, Colors.A_white, pygame.Rect(MenuW,0,screenW,screenH))
         pygame.draw.rect(gameDisplay, Colors.A_black, (0,0,MenuW,MenuH))
 
-        bSpeed.UpdateBackground()
         #Reset buttons
         for button in buttons:
             button.DrawButton()
@@ -415,8 +447,6 @@ def AntSimulation():
         pygame.display.update()
         
 
-
-    
     #Set up Simulation for setup
     ResetSim()
     
@@ -467,7 +497,8 @@ def AntSimulation():
                     bPause.action()
                 if event.key == pygame.K_z:
                     #print(Ant.Ant.GetAntCount())
-                    print(clock.get_fps())
+                    # print(clock.get_fps())
+                    ResetSim()
                     
 
         # Move every ant, if correct simulation timing and if not paused 
