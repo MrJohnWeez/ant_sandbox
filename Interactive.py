@@ -70,7 +70,9 @@ class ButtonBase:
     def getBottomCenter(self):
         return (self.getX()+self.getW()//2,self.getY()+self.getH())
     def getTopCenter(self):
-        return (self.getX()+self.getW()//2,self.getY())    
+        return (self.getX()+self.getW()//2,self.getY())  
+    def getRect(self):
+        return pygame.Rect(self.x,self.y,self.w,self.h)
 
 ######################################################################################################################################################################
 

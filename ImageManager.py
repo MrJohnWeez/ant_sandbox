@@ -77,8 +77,12 @@ def CreateButtonArray(buttonName):
 
 
 #Image paths for button images
+#Long
 IBLongBlue = CreateButtonArray("LongBlue.png")
 IBLongRed = CreateButtonArray("LongRed.png")
+IBLongRedFade = CreateButtonArray("LongRedFade.png")
+IBLongYellow = CreateButtonArray("LongYellow.png")
+#Short
 IBShortRed = CreateButtonArray("ShortRed.png")
 IBShortBlue = CreateButtonArray("ShortBlue.png")
 IBShortLightGreen = CreateButtonArray("ShortLightGreen.png")
@@ -90,3 +94,4 @@ IBShortLava = CreateButtonArray("ShortLava.png")
 IBShortGreen = CreateButtonArray("ShortGreen.png")
 IBShortPurple = CreateButtonArray("ShortPurple.png")
 IBShortYellow = CreateButtonArray("ShortYellow.png")
+

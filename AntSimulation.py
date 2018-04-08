@@ -8,7 +8,6 @@ import sys
 
 """
 ToDo List:
--Make button colors for both removals (20 mins)
 -Make game scaleable?
 -Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
 -Add help menu (4 hours)
@@ -416,10 +415,10 @@ def AntSimulation():
     toolSpacing = 2
     toolFontSize = 18
     T_ClearMouse = Text.Text("Remove Path",Rubik,toolFontSize,aTB_Color,B_AntFire.getBottomRight()[0],B_AntFire.getBottomRight()[1]+spacingFromTop,gameDisplay)
-    B_ClearMouse = Interactive.ButtonImage(T_ClearMouse.GetX(),T_ClearMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_ClearMouse,lambda: tool.ChangeTool("RemovePath"),pos="topcenter")
+    B_ClearMouse = Interactive.ButtonImage(T_ClearMouse.GetX(),T_ClearMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongYellow[1],IM.IBLongYellow[0],IM.IBLongYellow[2],gameDisplay,T_ClearMouse,lambda: tool.ChangeTool("RemovePath"),pos="topcenter")
     
     T_KillMouse = Text.Text("Remove Ant",Rubik,toolFontSize,aTB_Color,B_ClearMouse.getBottomCenter()[0],B_ClearMouse.getBottomCenter()[1]+toolSpacing,gameDisplay)
-    B_KillMouse = Interactive.ButtonImage(T_KillMouse.GetX(),T_KillMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_KillMouse,lambda: tool.ChangeTool("RemoveAnt"),pos="topcenter")
+    B_KillMouse = Interactive.ButtonImage(T_KillMouse.GetX(),T_KillMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongRedFade[1],IM.IBLongRedFade[0],IM.IBLongRedFade[2],gameDisplay,T_KillMouse,lambda: tool.ChangeTool("RemoveAnt"),pos="topcenter")
     
     buttons += [B_Ant,B_AntWater,B_AntWood,B_AntFire,B_AntPlant,B_AntZombie,B_AntCrazy,B_ClearMouse,B_KillMouse]
 
@@ -448,21 +447,44 @@ def AntSimulation():
         
 
     #Set up Simulation for setup
+    class ButtonRect:
+        def __init__(self, bRect, mouseOver=False):
+            self.bRect = bRect
+            self.mouseOver = mouseOver
+        
     ResetSim()
-    
+    buttonRects = []
+    buttonRects2 = []
+    for button in buttons:
+        buttonRects += [ButtonRect(button.getRect())]
+
+    for sbox in stepBoxesList:
+        for Bn in sbox.buttonObjects:
+            buttonRects2 += [ButtonRect(Bn.getRect())]
     #Main loop
     while True:
-        #Check for Button interaction
         mouse = pygame.mouse.get_pos()
+
+        #Highly optimized GUI interaction
         mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
         if mouseOverMenu:
-            
-            for button in buttons:
-                button.Update()
-            for sbox in stepBoxesList:
-                for Bn in sbox.buttonObjects:
-                    Bn.Update()
+            for i in range(len(buttons)):
+                if buttonRects[i].bRect.x+buttonRects[i].bRect.w > mouse[0] > buttonRects[i].bRect.x and buttonRects[i].bRect.y+buttonRects[i].bRect.h > mouse[1] > buttonRects[i].bRect.y:
+                    buttonRects[i].mouseOver = False
+                    buttons[i].Update()
+                elif not buttonRects[i].mouseOver:
+                    buttonRects[i].mouseOver = True
+                    buttons[i].Update()
 
+            for i in range(len(sbox.buttonObjects)):
+                if buttonRects2[i].bRect.x+buttonRects2[i].bRect.w > mouse[0] > buttonRects2[i].bRect.x and buttonRects2[i].bRect.y+buttonRects2[i].bRect.h > mouse[1] > buttonRects2[i].bRect.y:
+                    buttonRects2[i].mouseOver = False
+                    sbox.buttonObjects[i].Update()
+                elif not buttonRects2[i].mouseOver:
+                    buttonRects2[i].mouseOver = True
+                    sbox.buttonObjects[i].Update()
+
+        #Check all events in python (IO input)
         for event in pygame.event.get():
             for box in input_boxes:
                 box.handle_event(event)
