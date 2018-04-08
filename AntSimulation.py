@@ -678,8 +678,7 @@ def MainMenu():
         if musicVolume > 10:
             musicVolume = 0
         pygame.mixer.music.set_volume(musicVolume/10)
-        B_MusicVol.Update(str(musicVolume*10)+"%")
-        print(musicVolume/10)
+        B_MusicVol.ChangeMsg(str(musicVolume*10)+"%")
 
     def UpdateEffectVolume(shouldIncrease = True):
         global effectVolume
@@ -689,8 +688,7 @@ def MainMenu():
             effectVolume = 0
         for s in soundList:
             s.set_volume(effectVolume/10)
-        B_EffectVol.Update(str(effectVolume*10)+"%")
-        print(effectVolume/10)
+        B_EffectVol.ChangeMsg(str(effectVolume*10)+"%")
 
     
     
@@ -721,7 +719,7 @@ def MainMenu():
     
     T_EffectLabel = Text.Text("Effects:",Rubik,buttonSize,Colors.A_white,T_MusicLabel.getTopLeft()[0],T_MusicLabel.getTopLeft()[1],gameDisplay,pos="bottomleft")
     T_EffectVol = Text.Text(str(effectVolume*10)+"%",Rubik,buttonSize,Colors.A_white,T_EffectLabel.getBottomRight()[0],T_EffectLabel.getBottomRight()[1],gameDisplay)
-    B_EffectVol = Interactive.ButtonImage(T_EffectVol.GetX(),T_EffectVol.GetY(),int(T_EffectLabel.GetHieght()*IM.AspectLong),T_EffectLabel.GetHieght(),IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_MusicVol,UpdateEffectVolume,pos="bottomleft",sound=btSoundPack1)
+    B_EffectVol = Interactive.ButtonImage(T_EffectVol.GetX(),T_EffectVol.GetY(),int(T_EffectLabel.GetHieght()*IM.AspectLong),T_EffectLabel.GetHieght(),IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_EffectVol,UpdateEffectVolume,pos="bottomleft",sound=btSoundPack1)
 
 
     TextList += [T_MusicLabel,T_EffectLabel]
@@ -735,7 +733,8 @@ def MainMenu():
     UpdateMusicVolume(False)
     while go:
         #Check for Button interaction
-        for button in buttons: button.Update()
+        for button in buttons:
+            button.Update()
 
         for event in pygame.event.get():
             #Quit Game
