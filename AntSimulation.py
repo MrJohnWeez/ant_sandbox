@@ -8,8 +8,7 @@ import sys
 
 """
 ToDo List:
--Make sounds when adding all the ant types (50 mins)
--Add soft music? (30 mins)
+-Fix bug where volumecontrol buttons update each other when hovered
 -Add notice for sound copyright in about screen (sounds and music)
     -Music by Eric Matyas: www.soundimage.org
 -Add help menu (Link to my website with a wiki-type thing) (3 hours)
@@ -28,7 +27,7 @@ import Text
 #Globals
 global BNFont,screenH,screenW,DefualtScreenH,DefualtScreenW
 global MenuX,MenuY,MenuW,MenuH
-global gameDisplay
+global gameDisplay,effectVolume,musicVolume
 
 #TextPaths
 BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
@@ -49,6 +48,9 @@ pygame.display.set_caption('Ant Simulation')
 gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
+
+soundList = []
+
 #Game sounds
 buttonHoverSound1 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonHoverOverSound1.ogg"))
 buttonClickedSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonClickedSound1.ogg"))
@@ -59,7 +61,32 @@ killAntsSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\KillAntsSound
 zombieAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ZombieSound1.ogg"))
 btSoundPack1 = [buttonHoverSound1,buttonClickedSound]
 
+soundList += [buttonHoverSound1,buttonClickedSound,clearWipeSound1,clearWipeSound2,clearCanvasSound,killAntsSound,zombieAntSound]
+#Ant Sounds
+antSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\BasicAntSound.ogg"))
+plantAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\PlantAntSound.ogg"))
+fireAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\FireAntSound.ogg"))
+crazyAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\CrazyAntSound.ogg"))
+woodAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\WoodAntSound.ogg"))
+waterAntSound  = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\WaterAntSound.ogg"))
 
+soundList += [antSound,plantAntSound,fireAntSound,crazyAntSound,woodAntSound,waterAntSound]
+
+#Music
+mainMenuMusic = CustomPath.Path("assets\Music\\PixelPuppies.mp3")
+simulationMusic = CustomPath.Path("assets\Music\\BlueWorld.mp3")
+creditsMusic = CustomPath.Path("assets\Music\\Pixelville.mp3")
+musicVolume = 5
+effectVolume = 5
+
+for s in soundList:
+    s.set_volume(effectVolume/10) 
+
+pygame.mixer.music.set_volume(musicVolume/10)
+
+
+
+print(type(mainMenuMusic))
 def clamp(n, smallest, largest):
     """Returns a value in range of two values"""
     return max(smallest, min(n, largest))
@@ -146,7 +173,30 @@ def LoadMJWLink():
         subprocess.Popen(['open', url])
     else:
         webbrowser.open_new_tab(url)
+
+def LoadMusicWebsite():
+    url = 'https://soundimage.org/'
+    if sys.platform == 'darwin':    # in case of OS X
+        subprocess.Popen(['open', url])
+    else:
+        webbrowser.open_new_tab(url)
+
+def LoadHelpLink():
+    url = 'https://mrjohnweez.weebly.com'
+    if sys.platform == 'darwin':    # in case of OS X
+        subprocess.Popen(['open', url])
+    else:
+        webbrowser.open_new_tab(url)
     
+
+
+
+def MusicToggle(isOn):
+    if isOn:
+        pygame.mixer.music.pause()
+    else:
+        pygame.mixer.music.unpause()
+        
 #Simulation Functions
 def QuitSim():
     """Quits game"""
@@ -222,12 +272,16 @@ class ToolType:
         if self.activeTool == "Ant":
             tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            print(antSound.get_volume())
+            antSound.play()
         elif self.activeTool == "WaterAnt":
             tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            waterAntSound.play()
         elif self.activeTool == "WoodAnt":
             tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            woodAntSound.play()
         elif self.activeTool == "FireAnt":
             newList = []
             for i in newStep:
@@ -239,9 +293,11 @@ class ToolType:
                 newList += [i]
             tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, self.antSpeed.value)
             HelperAdd()
+            fireAntSound.play()
         elif self.activeTool == "PlantAnt":
             tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            plantAntSound.play()
         elif self.activeTool == "ZombieAnt":
             tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
@@ -249,6 +305,7 @@ class ToolType:
         elif self.activeTool == "CrazyAnt":
             tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            crazyAntSound.play()
         elif self.activeTool == "RemovePath":
             cubeSize = 15
             x = mouse[0] - cubeSize
@@ -285,6 +342,9 @@ def AntSimulation():
     """Main ant simulation loop"""
     global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
 
+    pygame.mixer.music.load(simulationMusic)
+    pygame.mixer.music.play(-1)
+
     #Clears screen
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
@@ -316,6 +376,7 @@ def AntSimulation():
     def togglePause():
         """Changes the pause state of the game. Also updates the toggle button"""
         isPaused.ToggleState()
+        MusicToggle(isPaused.state)
         bPause.ChangeMsg("Play") if isPaused.state else bPause.ChangeMsg("Pause")
 
     def ClearSim():
@@ -552,6 +613,12 @@ def AntSimulation():
                     # ResetSim()
                     w, h = pygame.display.get_surface().get_size()
                     print(w,h)
+                # if event.key == pygame.K_q:
+                #     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()+0.1)
+                # if event.key == pygame.K_w:
+                #     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()-0.1)
+                # if event.key == pygame.K_e:
+                #     print(pygame.mixer.music.get_volume())
 
             #If window has been resized
             elif event.type==pygame.VIDEORESIZE:
@@ -590,36 +657,82 @@ def MainMenu():
     """Main menu"""
     global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
 
+    pygame.mixer.music.set_volume((musicVolume/1)*0.4)
+    pygame.mixer.music.load(mainMenuMusic)
+    pygame.mixer.music.play(-1)
+
     mainMenuTitle = IM.ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay)
     go = True
     buttons = []
+    TextList = []
 
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
     mainMenuTitle.AutoScale(screenW,screenH,0.1,0.1)
     mainMenuTitle.Draw((screenW//2,screenH//8))
     
+    def UpdateMusicVolume(shouldIncrease = True):
+        global musicVolume
+        if shouldIncrease:
+            musicVolume += 1
+        if musicVolume > 10:
+            musicVolume = 0
+        pygame.mixer.music.set_volume(musicVolume/10)
+        B_MusicVol.Update(str(musicVolume*10)+"%")
+        print(musicVolume/10)
+
+    def UpdateEffectVolume(shouldIncrease = True):
+        global effectVolume
+        if shouldIncrease:
+            effectVolume += 1
+        if effectVolume > 10:
+            effectVolume = 0
+        for s in soundList:
+            s.set_volume(effectVolume/10)
+        B_EffectVol.Update(str(effectVolume*10)+"%")
+        print(effectVolume/10)
+
+    
+    
+
     spacing = 30
     T_Play = Text.Text("Play",Rubik,30,Colors.A_white,screenW//2,int(screenH*.4),gameDisplay)
-    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Play,AntSimulation,pos="center",sound=btSoundPack1)
+    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*IM.AspectLong),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Play,AntSimulation,pos="center",sound=btSoundPack1)
 
     T_Credits = Text.Text("Credits",Rubik,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
-    B_Credits = Interactive.ButtonImage(T_Credits.GetX(),T_Credits.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Credits,CreditsMenu,pos="center",sound=btSoundPack1)
+    B_Credits = Interactive.ButtonImage(T_Credits.GetX(),T_Credits.GetY(),int(50*IM.AspectLong),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Credits,CreditsMenu,pos="center",sound=btSoundPack1)
 
     T_Help = Text.Text("Help",Rubik,30,Colors.A_white,B_Credits.getCenter()[0],B_Credits.getBottomLeft()[1]+spacing,gameDisplay)
-    B_Help  = Interactive.ButtonImage(T_Help.GetX(),T_Help.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Help,CreditsMenu,pos="center",sound=btSoundPack1)
+    B_Help  = Interactive.ButtonImage(T_Help.GetX(),T_Help.GetY(),int(50*IM.AspectLong),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Help,LoadHelpLink,pos="center",sound=btSoundPack1)
 
     T_Quit = Text.Text("Quit",Rubik,30,Colors.A_white,B_Help.getCenter()[0],B_Help.getBottomLeft()[1]+spacing,gameDisplay)
-    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Quit,QuitSim,pos="center",sound=btSoundPack1)
+    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*IM.AspectLong),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Quit,QuitSim,pos="center",sound=btSoundPack1)
 
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
     buttons += [B_Play,B_Quit,B_Help,B_Credits]
-    TextList = [T_Copyright]
-    for i in TextList: i.AddText(forceUpdate=True)
+    TextList += [T_Copyright]
 
+
+    buttonSize = 20
+    T_MusicLabel = Text.Text("Music:",Rubik,buttonSize,Colors.A_white,T_Copyright.getTopLeft()[0],T_Copyright.getTopLeft()[1],gameDisplay,pos="bottomleft")
+    T_MusicVol = Text.Text(str(musicVolume*10)+"%",Rubik,buttonSize,Colors.A_white,T_MusicLabel.getBottomRight()[0],T_MusicLabel.getBottomRight()[1],gameDisplay)
+    B_MusicVol = Interactive.ButtonImage(T_MusicVol.GetX(),T_MusicVol.GetY(),int(T_MusicLabel.GetHieght()*IM.AspectLong),T_MusicLabel.GetHieght(),IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_MusicVol,UpdateMusicVolume,pos="bottomleft",sound=btSoundPack1)
     
+    T_EffectLabel = Text.Text("Effects:",Rubik,buttonSize,Colors.A_white,T_MusicLabel.getTopLeft()[0],T_MusicLabel.getTopLeft()[1],gameDisplay,pos="bottomleft")
+    T_EffectVol = Text.Text(str(effectVolume*10)+"%",Rubik,buttonSize,Colors.A_white,T_EffectLabel.getBottomRight()[0],T_EffectLabel.getBottomRight()[1],gameDisplay)
+    B_EffectVol = Interactive.ButtonImage(T_EffectVol.GetX(),T_EffectVol.GetY(),int(T_EffectLabel.GetHieght()*IM.AspectLong),T_EffectLabel.GetHieght(),IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_MusicVol,UpdateEffectVolume,pos="bottomleft",sound=btSoundPack1)
 
+
+    TextList += [T_MusicLabel,T_EffectLabel]
+    buttons += [B_MusicVol,B_EffectVol]
+
+
+    for i in TextList:
+        i.AddText(forceUpdate=True)
+
+    UpdateEffectVolume(False)
+    UpdateMusicVolume(False)
     while go:
         #Check for Button interaction
         for button in buttons: button.Update()
@@ -630,6 +743,7 @@ def MainMenu():
                 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    pygame.mixer.music.fadeout()
                     QuitSim()
 
             #If window has been resized
@@ -644,12 +758,17 @@ def MainMenu():
                 screenW = newWidth
                 screenH = newHeight
                 MenuH = newHeight
+                pygame.mixer.music.stop()
                 MainMenu()
 
 
 def CreditsMenu():
     """Credis menu"""
     global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
+
+    pygame.mixer.music.set_volume((musicVolume/10)*0.4)
+    pygame.mixer.music.load(creditsMusic)
+    pygame.mixer.music.play(-1)
 
     credisMenuTitle = IM.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
     go = True
