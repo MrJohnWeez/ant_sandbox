@@ -13,7 +13,7 @@ import ImageManager
 
 class ButtonBase:
     """Button Base class that all buttons most likey use"""
-    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None):
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, sound=None):
         self.x = x
         self.y = y
         self.w = w
@@ -26,6 +26,15 @@ class ButtonBase:
         self.normalColor = normalColor
         self.clickColor = Colors.shadeAlpha(normalColor, -0.2)
         self.hoverColor = Colors.shade(normalColor, 0.1)
+        if sound != None and len(sound) == 2:
+            self.hoverSound = sound[0]
+            self.clickedSound = sound[1]
+            self.hasSound = True
+        else:
+            self.hoverSound = None
+            self.clickedSound = None
+            self.hasSound = False
+        self.hasPlayedSound = False
 
     def ChangeMsg(self,newMsg):
         """ Changes the text over the button """
@@ -78,7 +87,7 @@ class ButtonBase:
 
 class Button(ButtonBase):
     """Creates a button object that can be clicked"""
-    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, autoFontSize=False,pos='topleft'):
+    def __init__(self, x, y, w, h, normalColor, display, textObject, action=None, autoFontSize=False,pos='topleft',sound=None):
         self.pos = pos
         if self.pos == 'topright':
             x = x - w
@@ -95,7 +104,7 @@ class Button(ButtonBase):
             y = y - h
         elif self.pos == 'topcenter':
             x = x - (w//2)
-        super().__init__(x, y, w, h, normalColor, display, textObject, action)
+        super().__init__(x, y, w, h, normalColor, display, textObject, action,sound)
         if autoFontSize:
             self.AutoFont()
         
@@ -110,10 +119,15 @@ class Button(ButtonBase):
 
         #If message has changed
         if newMsg != None: self.textObject.AddText(newMsg)
-
+        if not moveOver and self.hasPlayedSound:
+            self.hasPlayedSound = False
+            
         if moveOver and self.state == 0:
             #Mouse is over button change the color state
             self.state = 1
+            if self.hasSound and not self.hasPlayedSound:
+                self.hasPlayedSound = True
+                self.hoverSound.play()
             self.UpdateToScreen(self.hoverColor)
             
         elif not moveOver and (self.state == 1 or self.state == 2):
@@ -126,6 +140,8 @@ class Button(ButtonBase):
             click = pygame.mouse.get_pressed()
             if click[0] == 1 and self.action != None:
                 self.state = 2
+                if self.hasSound:
+                    self.clickedSound.play()
                 self.UpdateToScreen(self.clickColor)
                 
         elif self.state == 2 and pygame.mouse.get_pressed()[0] == 0:
@@ -146,7 +162,7 @@ class Button(ButtonBase):
 
 class ButtonImage(ButtonBase):
     """Creates a button object that can be clicked with an image as the button"""
-    def __init__(self, x, y, w, h, normalImagePath, hoverImagePath, clickedImagePath, display, textObject, action=None, autoFontSize=False, pos='topleft'):
+    def __init__(self, x, y, w, h, normalImagePath, hoverImagePath, clickedImagePath, display, textObject, action=None, autoFontSize=False, pos='topleft', sound=None):
         normalColor = Colors.A_black
         self.pos = pos
 
@@ -167,7 +183,7 @@ class ButtonImage(ButtonBase):
         elif self.pos == 'topcenter':
             x = x - (w//2)
 
-        super().__init__(x, y, w, h, normalColor, display, textObject, action)
+        super().__init__(x, y, w, h, normalColor, display, textObject, action,sound=sound)
         if autoFontSize:
             self.AutoFont()
 
@@ -226,9 +242,15 @@ class ButtonImage(ButtonBase):
         #If message has changed
         if newMsg != None: self.textObject.AddText(newMsg)
 
+        if not moveOver and self.hasPlayedSound:
+            self.hasPlayedSound = False
+
         if moveOver and self.state == 0:
             #Mouse is over button change the color state
             self.state = 1
+            if self.hasSound and not self.hasPlayedSound:
+                self.hasPlayedSound = True
+                self.hoverSound.play()
             self.UpdateToScreenImage("Hover")
             
         elif not moveOver and (self.state == 1 or self.state == 2):
@@ -241,6 +263,8 @@ class ButtonImage(ButtonBase):
             click = pygame.mouse.get_pressed()
             if click[0] == 1 and self.action != None:
                 self.state = 2
+                if self.hasSound:
+                    self.clickedSound.play()
                 self.UpdateToScreenImage("Clicked")
                 
 

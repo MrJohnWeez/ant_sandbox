@@ -8,9 +8,11 @@ import sys
 
 """
 ToDo List:
--Make game scaleable?
--Add Sounds (When you place an ant,  hit clear, ect) (4 hours)
--Add help menu (4 hours)
+-Make sounds when adding all the ant types (50 mins)
+-Add soft music? (30 mins)
+-Add notice for sound copyright in about screen (sounds and music)
+    -Music by Eric Matyas: www.soundimage.org
+-Add help menu (Link to my website with a wiki-type thing) (3 hours)
 """
 
 #Custom
@@ -40,12 +42,27 @@ screenW = DefualtScreenW
 MenuX,MenuY = 0,0
 MenuW,MenuH = 200,screenH
 
-#Set up pygame screen
+#Set up pygame
 pygame.init()
+pygame.mixer.init()
+pygame.display.set_caption('Ant Simulation')
 gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
-def clamp(n, smallest, largest): return max(smallest, min(n, largest))
+#Game sounds
+buttonHoverSound1 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonHoverOverSound1.ogg"))
+buttonClickedSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonClickedSound1.ogg"))
+clearWipeSound1 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ClearWipeSound1.ogg"))
+clearWipeSound2 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\clearWipeSound2.ogg"))
+clearCanvasSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ClearCanvasSound.ogg"))
+killAntsSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\KillAntsSound.ogg"))
+zombieAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ZombieSound1.ogg"))
+btSoundPack1 = [buttonHoverSound1,buttonClickedSound]
+
+
+def clamp(n, smallest, largest):
+    """Returns a value in range of two values"""
+    return max(smallest, min(n, largest))
 
 #Classes:
 class StepBoxes:
@@ -97,9 +114,9 @@ class StepBoxes:
         #Reset Button
         relX, relY = (IB_UpStep.getTopRight()[0]+2,IB_UpStep.getTopRight()[1])
         T_random = Text.Text("R",BNFont,20,Colors.A_black,relX,relY,self.Gdisplay)
-        B_random = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_random, lambda: self.randomFunction(self.updateVars,self.boxObjects))
+        B_random = Interactive.Button(relX,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_random, lambda: self.randomFunction(self.updateVars,self.boxObjects),sound=btSoundPack1)
         T_resetAntStep = Text.Text("C",BNFont,20,Colors.A_black,B_random.getTopRight()[0],relY,self.Gdisplay)
-        B_resetAntStep = Interactive.Button(B_random.getTopRight()[0]+5,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_resetAntStep, lambda: self.clearFunction(self.updateVars,self.boxObjects))
+        B_resetAntStep = Interactive.Button(B_random.getTopRight()[0]+5,relY,15,self.h, Colors.A_clearN, self.Gdisplay, T_resetAntStep, lambda: self.clearFunction(self.updateVars,self.boxObjects),sound=btSoundPack1)
 
         self.buttonObjects = [B_resetAntStep,B_random]
         self.w = abs(max(T_UpStep.GetX(),T_DownStep.GetX(),T_RightStep.GetX(),T_LeftStep.GetX(),T_Title.GetX())-(B_resetAntStep.x+B_resetAntStep.w))
@@ -228,6 +245,7 @@ class ToolType:
         elif self.activeTool == "ZombieAnt":
             tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
+            zombieAntSound.play()
         elif self.activeTool == "CrazyAnt":
             tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
             HelperAdd()
@@ -264,8 +282,9 @@ class ToolType:
 
 
 def AntSimulation():
-    global screenW,screenH,MenuH
     """Main ant simulation loop"""
+    global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
+
     #Clears screen
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
@@ -325,33 +344,33 @@ def AntSimulation():
     T_mainmenu = Text.Text("Back",Rubik,21,Colors.A_white,T_Copyright.getTopLeft()[0],T_Copyright.getTopLeft()[1],gameDisplay)
     tempHeight = T_mainmenu.GetHieght()+4
     
-    B_mainmenu = Interactive.ButtonImage(T_mainmenu.GetX(),T_mainmenu.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortBlue[1],IM.IBShortBlue[0],IM.IBShortBlue[2],gameDisplay,T_mainmenu,MainMenu,pos="bottomleft")
+    B_mainmenu = Interactive.ButtonImage(T_mainmenu.GetX(),T_mainmenu.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortBlue[1],IM.IBShortBlue[0],IM.IBShortBlue[2],gameDisplay,T_mainmenu,MainMenu,pos="bottomleft",sound=btSoundPack1)
     
     T_reset = Text.Text("Reset",Rubik,20,Colors.A_white,MenuW,MenuY,gameDisplay)
     tempHeight = T_reset.GetHieght()+4
-    B_reset = Interactive.ButtonImage(T_reset.GetX(),T_reset.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_reset,ClearSim,pos="topright")
+    B_reset = Interactive.ButtonImage(T_reset.GetX(),T_reset.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_reset,ClearSim,pos="topright",sound=[buttonHoverSound1,clearWipeSound1])
     
     T_kill = Text.Text("Kill",Rubik,20,Colors.A_white,B_reset.getBottomRight()[0],B_reset.getBottomRight()[1],gameDisplay)
     tempHeight = T_kill.GetHieght()+4
-    B_kill = Interactive.ButtonImage(T_kill.GetX(),T_kill.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_kill,Ant.Ant.KillAllAnts,pos="topright")
+    B_kill = Interactive.ButtonImage(T_kill.GetX(),T_kill.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_kill,Ant.Ant.KillAllAnts,pos="topright",sound=[buttonHoverSound1,killAntsSound])
     
     T_clearPath = Text.Text("Clear",Rubik,20,Colors.A_white,B_kill.getBottomRight()[0],B_kill.getBottomRight()[1],gameDisplay)
     tempHeight = T_clearPath.GetHieght()+4
-    B_clearPath = Interactive.ButtonImage(T_clearPath.GetX(),T_clearPath.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_clearPath,ClearPaths,pos="topright")
+    B_clearPath = Interactive.ButtonImage(T_clearPath.GetX(),T_clearPath.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_clearPath,ClearPaths,pos="topright",sound=[buttonHoverSound1,clearCanvasSound])
     
     buttons += [B_mainmenu,B_reset,B_kill,B_clearPath]
     
     
     T_pause = Text.Text("Pause",Rubik,20,Colors.A_white,MenuX,MenuY,gameDisplay)
     tempHeight = T_pause.GetHieght()+7
-    bPause = Interactive.ButtonImage(T_pause.GetX(),T_pause.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortLightGreen[1],IM.IBShortLightGreen[0],IM.IBShortLightGreen[2],gameDisplay,T_pause,togglePause,pos="topleft")
+    bPause = Interactive.ButtonImage(T_pause.GetX(),T_pause.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortLightGreen[1],IM.IBShortLightGreen[0],IM.IBShortLightGreen[2],gameDisplay,T_pause,togglePause,pos="topleft",sound=btSoundPack1)
 
     T_speedLabel1 = Text.Text("Times",Rubik,18,Colors.A_white,bPause.getBottomRight()[0]-15,bPause.getBottomRight()[1]+5,gameDisplay,pos="topcenter")
     T_speedLabel2 = Text.Text("Slower:",Rubik,18,Colors.A_white,T_speedLabel1.getBottomCenter()[0],T_speedLabel1.getBottomCenter()[1],gameDisplay,pos="topcenter")
 
     T_Speed = Text.Text("x"+str(simulationSpeed.value),Rubik,19,Colors.A_white,T_speedLabel2.getBottomCenter()[0]+7,T_speedLabel2.getBottomCenter()[1],gameDisplay,pos="topcenter")
     tempHeight = T_Speed.GetHieght()+8
-    bSpeed = Interactive.ButtonImage(T_Speed.GetX(),T_Speed.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortGray[1],IM.IBShortGray[0],IM.IBShortGray[2],gameDisplay,T_Speed,speedButton,pos="topcenter")
+    bSpeed = Interactive.ButtonImage(T_Speed.GetX(),T_Speed.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortGray[1],IM.IBShortGray[0],IM.IBShortGray[2],gameDisplay,T_Speed,speedButton,pos="topcenter",sound=btSoundPack1)
 
     texts += [T_speedLabel1,T_speedLabel2]
     buttons += [bPause,bSpeed]
@@ -395,26 +414,26 @@ def AntSimulation():
 
     #Right Side
     T_Ant = Text.Text("Ant",Rubik,aTB_fontSize,aTB_Color,aTB_x,aTB_y,gameDisplay)
-    B_Ant = Interactive.ButtonImage(T_Ant.GetX(),T_Ant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortGray[1],IM.IBShortGray[0],IM.IBShortGray[2],gameDisplay,T_Ant,lambda: tool.ChangeTool("Ant"),pos="topright")
+    B_Ant = Interactive.ButtonImage(T_Ant.GetX(),T_Ant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortGray[1],IM.IBShortGray[0],IM.IBShortGray[2],gameDisplay,T_Ant,lambda: tool.ChangeTool("Ant"),pos="topright",sound=btSoundPack1)
     
     T_AntWater = Text.Text("Water",Rubik,aTB_fontSize,aTB_Color,B_Ant.getBottomRight()[0],B_Ant.getBottomRight()[1]+aTB_spacing,gameDisplay)
-    B_AntWater = Interactive.ButtonImage(T_AntWater.GetX(),T_AntWater.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortDarkBlue[1],IM.IBShortDarkBlue[0],IM.IBShortDarkBlue[2],gameDisplay,T_AntWater,lambda: tool.ChangeTool("WaterAnt"),pos="topright")
+    B_AntWater = Interactive.ButtonImage(T_AntWater.GetX(),T_AntWater.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortDarkBlue[1],IM.IBShortDarkBlue[0],IM.IBShortDarkBlue[2],gameDisplay,T_AntWater,lambda: tool.ChangeTool("WaterAnt"),pos="topright",sound=btSoundPack1)
     
     T_AntWood = Text.Text("Wood",Rubik,aTB_fontSize,aTB_Color,B_AntWater.getBottomRight()[0],B_AntWater.getBottomRight()[1]+aTB_spacing,gameDisplay)
-    B_AntWood = Interactive.ButtonImage(T_AntWood.GetX(),T_AntWood.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightBrown[1],IM.IBShortLightBrown[0],IM.IBShortLightBrown[2],gameDisplay,T_AntWood,lambda: tool.ChangeTool("WoodAnt"),pos="topright")
+    B_AntWood = Interactive.ButtonImage(T_AntWood.GetX(),T_AntWood.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightBrown[1],IM.IBShortLightBrown[0],IM.IBShortLightBrown[2],gameDisplay,T_AntWood,lambda: tool.ChangeTool("WoodAnt"),pos="topright",sound=btSoundPack1)
     
     T_AntFire = Text.Text("Fire",Rubik,aTB_fontSize,aTB_Color,B_AntWood.getBottomRight()[0],B_AntWood.getBottomRight()[1]+aTB_spacing,gameDisplay)
-    B_AntFire = Interactive.ButtonImage(T_AntFire.GetX(),T_AntFire.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLava[1],IM.IBShortLava[0],IM.IBShortLava[2],gameDisplay,T_AntFire,lambda: tool.ChangeTool("FireAnt"),pos="topright")
+    B_AntFire = Interactive.ButtonImage(T_AntFire.GetX(),T_AntFire.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLava[1],IM.IBShortLava[0],IM.IBShortLava[2],gameDisplay,T_AntFire,lambda: tool.ChangeTool("FireAnt"),pos="topright",sound=btSoundPack1)
     
     #Left side
     T_AntPlant = Text.Text("Plant",Rubik,aTB_fontSize,aTB_Color,aTB_x,aTB_y,gameDisplay)
-    B_AntPlant = Interactive.ButtonImage(T_AntPlant.GetX(),T_AntPlant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightGreen[1],IM.IBShortLightGreen[0],IM.IBShortLightGreen[2],gameDisplay,T_AntPlant,lambda: tool.ChangeTool("PlantAnt"),pos="topleft")
+    B_AntPlant = Interactive.ButtonImage(T_AntPlant.GetX(),T_AntPlant.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortLightGreen[1],IM.IBShortLightGreen[0],IM.IBShortLightGreen[2],gameDisplay,T_AntPlant,lambda: tool.ChangeTool("PlantAnt"),pos="topleft",sound=btSoundPack1)
     
     T_AntZombie = Text.Text("Zombie",Rubik,aTB_fontSize,aTB_Color,B_AntPlant.getBottomLeft()[0],B_AntPlant.getBottomLeft()[1]+aTB_spacing,gameDisplay)
-    B_AntZombie = Interactive.ButtonImage(T_AntZombie.GetX(),T_AntZombie.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortPurple[1],IM.IBShortPurple[0],IM.IBShortPurple[2],gameDisplay,T_AntZombie,lambda: tool.ChangeTool("ZombieAnt"),pos="topleft")
+    B_AntZombie = Interactive.ButtonImage(T_AntZombie.GetX(),T_AntZombie.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortPurple[1],IM.IBShortPurple[0],IM.IBShortPurple[2],gameDisplay,T_AntZombie,lambda: tool.ChangeTool("ZombieAnt"),pos="topleft",sound=btSoundPack1)
     
     T_AntCrazy = Text.Text("Crazy",Rubik,aTB_fontSize,aTB_Color,B_AntZombie.getBottomLeft()[0],B_AntZombie.getBottomLeft()[1]+aTB_spacing,gameDisplay)
-    B_AntCrazy = Interactive.ButtonImage(T_AntCrazy.GetX(),T_AntCrazy.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortYellow[1],IM.IBShortYellow[0],IM.IBShortYellow[2],gameDisplay,T_AntCrazy,lambda: tool.ChangeTool("CrazyAnt"),pos="topleft")
+    B_AntCrazy = Interactive.ButtonImage(T_AntCrazy.GetX(),T_AntCrazy.GetY(),aTB_BtnW,aTB_BtnH,IM.IBShortYellow[1],IM.IBShortYellow[0],IM.IBShortYellow[2],gameDisplay,T_AntCrazy,lambda: tool.ChangeTool("CrazyAnt"),pos="topleft",sound=btSoundPack1)
     
     
     #Tools
@@ -422,10 +441,10 @@ def AntSimulation():
     toolSpacing = 2
     toolFontSize = 18
     T_ClearMouse = Text.Text("Remove Path",Rubik,toolFontSize,aTB_Color,B_AntFire.getBottomRight()[0],B_AntFire.getBottomRight()[1]+spacingFromTop,gameDisplay)
-    B_ClearMouse = Interactive.ButtonImage(T_ClearMouse.GetX(),T_ClearMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongYellow[1],IM.IBLongYellow[0],IM.IBLongYellow[2],gameDisplay,T_ClearMouse,lambda: tool.ChangeTool("RemovePath"),pos="topcenter")
+    B_ClearMouse = Interactive.ButtonImage(T_ClearMouse.GetX(),T_ClearMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongYellow[1],IM.IBLongYellow[0],IM.IBLongYellow[2],gameDisplay,T_ClearMouse,lambda: tool.ChangeTool("RemovePath"),pos="topcenter",sound=btSoundPack1)
     
     T_KillMouse = Text.Text("Remove Ant",Rubik,toolFontSize,aTB_Color,B_ClearMouse.getBottomCenter()[0],B_ClearMouse.getBottomCenter()[1]+toolSpacing,gameDisplay)
-    B_KillMouse = Interactive.ButtonImage(T_KillMouse.GetX(),T_KillMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongRedFade[1],IM.IBLongRedFade[0],IM.IBLongRedFade[2],gameDisplay,T_KillMouse,lambda: tool.ChangeTool("RemoveAnt"),pos="topcenter")
+    B_KillMouse = Interactive.ButtonImage(T_KillMouse.GetX(),T_KillMouse.GetY(),int(tempHeight*IM.AspectLong),aTB_BtnH,IM.IBLongRedFade[1],IM.IBLongRedFade[0],IM.IBLongRedFade[2],gameDisplay,T_KillMouse,lambda: tool.ChangeTool("RemoveAnt"),pos="topcenter",sound=btSoundPack1)
     
     buttons += [B_Ant,B_AntWater,B_AntWood,B_AntFire,B_AntPlant,B_AntZombie,B_AntCrazy,B_ClearMouse,B_KillMouse]
 
@@ -469,8 +488,9 @@ def AntSimulation():
         for Bn in sbox.buttonObjects:
             buttonRects2 += [ButtonRect(Bn.getRect())]
     #Main loop
-    
+   
     while True:
+        
         mouse = pygame.mouse.get_pos()
         
         #Highly optimized GUI interaction
@@ -529,7 +549,6 @@ def AntSimulation():
                     bPause.action()
                 if event.key == pygame.K_z:
                     #print(Ant.Ant.GetAntCount())
-                    # print(clock.get_fps())
                     # ResetSim()
                     w, h = pygame.display.get_surface().get_size()
                     print(w,h)
@@ -568,10 +587,9 @@ def AntSimulation():
     MainMenu()
 
 def MainMenu():
-    global screenW
-    global screenH
-    global MenuH
     """Main menu"""
+    global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
+
     mainMenuTitle = IM.ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay)
     go = True
     buttons = []
@@ -579,21 +597,24 @@ def MainMenu():
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
     mainMenuTitle.AutoScale(screenW,screenH,0.1,0.1)
-    mainMenuTitle.Draw((screenW//2,screenH//4))
+    mainMenuTitle.Draw((screenW//2,screenH//8))
     
-    spacing = 25
-    T_Play = Text.Text("Play",Rubik,30,Colors.A_white,screenW//2,int(screenH*.5),gameDisplay)
-    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Play,AntSimulation,pos="center")
+    spacing = 30
+    T_Play = Text.Text("Play",Rubik,30,Colors.A_white,screenW//2,int(screenH*.4),gameDisplay)
+    B_Play = Interactive.ButtonImage(T_Play.GetX(),T_Play.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Play,AntSimulation,pos="center",sound=btSoundPack1)
 
-    T_About = Text.Text("About",Rubik,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
-    B_About = Interactive.ButtonImage(T_About.GetX(),T_About.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_About,AboutMenu,pos="center")
+    T_Credits = Text.Text("Credits",Rubik,30,Colors.A_white,B_Play.getCenter()[0],B_Play.getBottomLeft()[1]+spacing,gameDisplay)
+    B_Credits = Interactive.ButtonImage(T_Credits.GetX(),T_Credits.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Credits,CreditsMenu,pos="center",sound=btSoundPack1)
 
-    T_Quit = Text.Text("Quit",Rubik,30,Colors.A_white,B_About.getCenter()[0],B_About.getBottomLeft()[1]+spacing,gameDisplay)
-    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Quit,QuitSim,pos="center")
+    T_Help = Text.Text("Help",Rubik,30,Colors.A_white,B_Credits.getCenter()[0],B_Credits.getBottomLeft()[1]+spacing,gameDisplay)
+    B_Help  = Interactive.ButtonImage(T_Help.GetX(),T_Help.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Help,CreditsMenu,pos="center",sound=btSoundPack1)
+
+    T_Quit = Text.Text("Quit",Rubik,30,Colors.A_white,B_Help.getCenter()[0],B_Help.getBottomLeft()[1]+spacing,gameDisplay)
+    B_Quit = Interactive.ButtonImage(T_Quit.GetX(),T_Quit.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Quit,QuitSim,pos="center",sound=btSoundPack1)
 
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
-    buttons += [B_Play,B_Quit,B_About]
+    buttons += [B_Play,B_Quit,B_Help,B_Credits]
     TextList = [T_Copyright]
     for i in TextList: i.AddText(forceUpdate=True)
 
@@ -626,31 +647,30 @@ def MainMenu():
                 MainMenu()
 
 
-def AboutMenu():
-    global screenW
-    global screenH
-    global MenuH
-    """About menu"""
-    aboutMenuTitle = IM.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
+def CreditsMenu():
+    """Credis menu"""
+    global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
+
+    credisMenuTitle = IM.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
     go = True
     buttons = []
 
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
-    aboutMenuTitle.AutoScale(screenW,screenH,2,0.7)
-    aboutMenuTitle.Draw((screenW//2,screenH//8))
+    credisMenuTitle.AutoScale(screenW,screenH,2,0.7)
+    credisMenuTitle.Draw((screenW//2,screenH//8))
     
     #Display all text
     T_About1 = Text.Text("Game created by: John Wiesner ",Rubik,25,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center")
 
     T_ClickBait = Text.Text("MrJohnWeez",Rubik,22,Colors.A_RichBlueGreen,T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],gameDisplay)
-    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter")
+    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter",sound=btSoundPack1)
    
     T_About2 = Text.Text("Special thanks to Chuck Conner as alpha tester",Rubik,20,Colors.A_white,bClickBait.getBottomCenter()[0],bClickBait.getBottomCenter()[1]+10,gameDisplay,pos="topcenter")
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
     T_Back = Text.Text("Back",Rubik,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
-    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,MainMenu,pos="bottomcenter")
+    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,MainMenu,pos="bottomcenter",sound=btSoundPack1)
 
     TextList = [T_About1,T_About2,T_Copyright]
     buttons += [B_Back,bClickBait]
@@ -676,4 +696,4 @@ def AboutMenu():
                 MenuH = newHeight
                 AboutMenu()
 
-MainMenu()
+MainMenu()  #launch game
