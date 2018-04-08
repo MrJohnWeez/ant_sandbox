@@ -24,7 +24,7 @@ import Text
 
 
 #Globals
-global BNFont,screenH,screenW
+global BNFont,screenH,screenW,DefualtScreenH,DefualtScreenW
 global MenuX,MenuY,MenuW,MenuH
 global gameDisplay
 
@@ -33,14 +33,16 @@ BNFont = CustomPath.Path("assets\BebasNeue-Regular.ttf")
 Rubik = CustomPath.Path("assets\Rubik-Regular.ttf")
 
 #Define Screen
-screenH = 600
-screenW = 800
+DefualtScreenH = 600
+DefualtScreenW = 800
+screenH = DefualtScreenH
+screenW = DefualtScreenW
 MenuX,MenuY = 0,0
 MenuW,MenuH = 200,screenH
 
 #Set up pygame screen
 pygame.init()
-gameDisplay = pygame.display.set_mode((screenW,screenH))
+gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
 def clamp(n, smallest, largest): return max(smallest, min(n, largest))
@@ -262,6 +264,7 @@ class ToolType:
 
 
 def AntSimulation():
+    global screenW,screenH,MenuH
     """Main ant simulation loop"""
     #Clears screen
     gameDisplay.fill(Colors.A_black)
@@ -283,7 +286,9 @@ def AntSimulation():
     input_boxes = []
     buttons = []
     texts = []
+    
     antSteps = AntStepVar.AntStepGroup(1,screenH)
+    
     antSpeed = AntSpeed(Ant.Ant.maxSpeed-1000,1,Ant.Ant.maxSpeed)
     isPaused = ToggleVar()
 
@@ -319,6 +324,7 @@ def AntSimulation():
     #Define Buttons
     T_mainmenu = Text.Text("Back",Rubik,21,Colors.A_white,T_Copyright.getTopLeft()[0],T_Copyright.getTopLeft()[1],gameDisplay)
     tempHeight = T_mainmenu.GetHieght()+4
+    
     B_mainmenu = Interactive.ButtonImage(T_mainmenu.GetX(),T_mainmenu.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortBlue[1],IM.IBShortBlue[0],IM.IBShortBlue[2],gameDisplay,T_mainmenu,MainMenu,pos="bottomleft")
     
     T_reset = Text.Text("Reset",Rubik,20,Colors.A_white,MenuW,MenuY,gameDisplay)
@@ -379,6 +385,7 @@ def AntSimulation():
 
     #aTB_ = Ant Type Buttons
     aTB_x = MenuW//2
+    
     aTB_y = MenuH//4
     aTB_Color = Colors.A_white
     aTB_fontSize = 20
@@ -462,11 +469,12 @@ def AntSimulation():
         for Bn in sbox.buttonObjects:
             buttonRects2 += [ButtonRect(Bn.getRect())]
     #Main loop
+    
     while True:
         mouse = pygame.mouse.get_pos()
-
+        
         #Highly optimized GUI interaction
-        mouseOverMenu = MenuX+MenuW > mouse[0] > MenuX and MenuY+MenuH > mouse[1] > MenuY
+        mouseOverMenu = MenuX+MenuW > mouse[0] > -1000 and MenuY+MenuH > mouse[1] > -1000
         if mouseOverMenu:
             for i in range(len(buttons)):
                 if buttonRects[i].bRect.x+buttonRects[i].bRect.w > mouse[0] > buttonRects[i].bRect.x and buttonRects[i].bRect.y+buttonRects[i].bRect.h > mouse[1] > buttonRects[i].bRect.y:
@@ -486,9 +494,11 @@ def AntSimulation():
 
         #Check all events in python (IO input)
         for event in pygame.event.get():
+            #Handle input box events in the stepboxes
             for box in input_boxes:
                 box.handle_event(event)
 
+            #Handle reset and clear buttons in the stepboxes
             for sbox in stepBoxesList:
                 for B in sbox.boxObjects:
                     B.handle_event(event)
@@ -520,7 +530,24 @@ def AntSimulation():
                 if event.key == pygame.K_z:
                     #print(Ant.Ant.GetAntCount())
                     # print(clock.get_fps())
-                    ResetSim()
+                    # ResetSim()
+                    w, h = pygame.display.get_surface().get_size()
+                    print(w,h)
+
+            #If window has been resized
+            elif event.type==pygame.VIDEORESIZE:
+                newWidth, newHeight = event.dict['size']
+                if newWidth < DefualtScreenW:
+                    newWidth = DefualtScreenW
+                if newHeight < DefualtScreenH:
+                    newHeight = DefualtScreenH
+                
+                screen=pygame.display.set_mode((newWidth,newHeight),pygame.RESIZABLE)
+                screenW = newWidth
+                screenH = newHeight
+                MenuH = newHeight
+                antSteps.SetMaxValue(screenH)
+                AntSimulation()
                     
 
         # Move every ant, if correct simulation timing and if not paused 
@@ -536,9 +563,14 @@ def AntSimulation():
                     
                 pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
 
-
+    #Always go to main menu if main loop was quit
+    print("Game loop exited")
+    MainMenu()
 
 def MainMenu():
+    global screenW
+    global screenH
+    global MenuH
     """Main menu"""
     mainMenuTitle = IM.ImageType(CustomPath.Path("assets\AntSimTitle.png"),gameDisplay)
     go = True
@@ -575,12 +607,29 @@ def MainMenu():
             #Quit Game
             if event.type == pygame.QUIT: QuitSim()
                 
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     QuitSim()
 
+            #If window has been resized
+            elif event.type==pygame.VIDEORESIZE:
+                newWidth, newHeight = event.dict['size']
+                if newWidth < DefualtScreenW:
+                    newWidth = DefualtScreenW
+                if newHeight < DefualtScreenH:
+                    newHeight = DefualtScreenH
+                
+                screen=pygame.display.set_mode((newWidth,newHeight),pygame.RESIZABLE)
+                screenW = newWidth
+                screenH = newHeight
+                MenuH = newHeight
+                MainMenu()
+
 
 def AboutMenu():
+    global screenW
+    global screenH
+    global MenuH
     """About menu"""
     aboutMenuTitle = IM.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
     go = True
@@ -612,5 +661,19 @@ def AboutMenu():
         for button in buttons: button.Update()
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT: QuitSim()
+
+            #If window has been resized
+            elif event.type==pygame.VIDEORESIZE:
+                newWidth, newHeight = event.dict['size']
+                if newWidth < DefualtScreenW:
+                    newWidth = DefualtScreenW
+                if newHeight < DefualtScreenH:
+                    newHeight = DefualtScreenH
+                
+                screen=pygame.display.set_mode((newWidth,newHeight),pygame.RESIZABLE)
+                screenW = newWidth
+                screenH = newHeight
+                MenuH = newHeight
+                AboutMenu()
 
 MainMenu()

@@ -7,6 +7,8 @@ class AntStepVar:
         self.min = minValue
         self.max = maxValue
         self.startValue = startValue
+    def SetMaxValue(self,value):
+        self.max = value
 
     def UpdateValue(self, shouldIncrease, step=1):
         """Increment the value by the step value up or down"""
@@ -60,7 +62,12 @@ class AntStepGroup():
         self.down = AntStepVar(minValue,maxValue)
         self.right = AntStepVar(minValue,maxValue)
         self.left = AntStepVar(minValue,maxValue)
-    
+    def SetMaxValue(self, value):
+        self.up.SetMaxValue(value)
+        self.down.SetMaxValue(value)
+        self.right.SetMaxValue(value)
+        self.left.SetMaxValue(value)
+        
     def GetGroup(self):
         return [self.up, self.down, self.right, self.left]
 
