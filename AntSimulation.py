@@ -1,4 +1,12 @@
-#Built in
+"""
+MrJohnWeez©2018 all rights reserved.
+
+ToDo List:
+-Comment Code and clean up (2 hours)
+-Add help menu (Link to my website with a wiki-type thing) (3 hours)
+"""
+
+#3rd party imports
 import random
 import time
 import pygame
@@ -6,15 +14,9 @@ import subprocess
 import webbrowser
 import sys
 
-"""
-ToDo List:
--Fix bug where volumecontrol buttons update each other when hovered
--Add notice for sound copyright in about screen (sounds and music)
-    -Music by Eric Matyas: www.soundimage.org
--Add help menu (Link to my website with a wiki-type thing) (3 hours)
-"""
 
-#Custom
+
+#Custom imports
 import Ant
 import AntStepVar
 import Colors
@@ -45,7 +47,7 @@ MenuW,MenuH = 200,screenH
 pygame.init()
 pygame.mixer.init()
 pygame.display.set_caption('Ant Simulation')
-gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.RESIZABLE)
+gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
 
@@ -86,7 +88,6 @@ pygame.mixer.music.set_volume(musicVolume/10)
 
 
 
-print(type(mainMenuMusic))
 def clamp(n, smallest, largest):
     """Returns a value in range of two values"""
     return max(smallest, min(n, largest))
@@ -175,7 +176,7 @@ def LoadMJWLink():
         webbrowser.open_new_tab(url)
 
 def LoadMusicWebsite():
-    url = 'https://soundimage.org/'
+    url = 'http://soundimage.org/'
     if sys.platform == 'darwin':    # in case of OS X
         subprocess.Popen(['open', url])
     else:
@@ -188,7 +189,28 @@ def LoadHelpLink():
     else:
         webbrowser.open_new_tab(url)
     
+def LoadSecret(textArrays):
+    pygame.mixer.music.pause()
 
+    spacing = 0
+    fontSize = 25
+    T_S1 = Text.Text("For the brave souls who found this link: Thou Art the chosen ones.",Rubik,fontSize,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center",backgroundColor=Colors.A_black)
+    T_S2 = Text.Text("For programming is a way of life, a journey, a quest, but without rest",Rubik,fontSize,Colors.A_white,T_S1.getBottomCenter()[0],T_S1.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    T_S3 = Text.Text("and unsolved puzzles. To you, true survivers, kings of men, I say this:",Rubik,fontSize,Colors.A_white,T_S2.getBottomCenter()[0],T_S2.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    T_S4 = Text.Text("Never gonna give you up, never gonna let you down,",Rubik,fontSize,Colors.A_white,T_S3.getBottomCenter()[0],T_S3.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    T_S5 = Text.Text("never gonna run around and desert you. Never gonna make you cry,",Rubik,fontSize,Colors.A_white,T_S4.getBottomCenter()[0],T_S4.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    T_S6 = Text.Text("never gonna say goodbye. Never gonna tell a lie and hurt you.",Rubik,fontSize,Colors.A_white,T_S5.getBottomCenter()[0],T_S5.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    
+    TextList = [T_S1,T_S2,T_S3,T_S4,T_S5,T_S6]
+
+    for i in TextList: i.AddText(forceUpdate=True)
+
+def LoadSecret2():
+    url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+    if sys.platform == 'darwin':    # in case of OS X
+        subprocess.Popen(['open', url])
+    else:
+        webbrowser.open_new_tab(url)
 
 
 def MusicToggle(isOn):
@@ -613,12 +635,6 @@ def AntSimulation():
                     # ResetSim()
                     w, h = pygame.display.get_surface().get_size()
                     print(w,h)
-                # if event.key == pygame.K_q:
-                #     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()+0.1)
-                # if event.key == pygame.K_w:
-                #     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()-0.1)
-                # if event.key == pygame.K_e:
-                #     print(pygame.mixer.music.get_volume())
 
             #If window has been resized
             elif event.type==pygame.VIDEORESIZE:
@@ -648,10 +664,6 @@ def AntSimulation():
                     T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
                     
                 pygame.display.update(Ant.Ant.GetRectUpdates())    #Update ants on screen only
-
-    #Always go to main menu if main loop was quit
-    print("Game loop exited")
-    MainMenu()
 
 def MainMenu():
     """Main menu"""
@@ -721,10 +733,11 @@ def MainMenu():
     T_EffectVol = Text.Text(str(effectVolume*10)+"%",Rubik,buttonSize,Colors.A_white,T_EffectLabel.getBottomRight()[0],T_EffectLabel.getBottomRight()[1],gameDisplay)
     B_EffectVol = Interactive.ButtonImage(T_EffectVol.GetX(),T_EffectVol.GetY(),int(T_EffectLabel.GetHieght()*IM.AspectLong),T_EffectLabel.GetHieght(),IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_EffectVol,UpdateEffectVolume,pos="bottomleft",sound=btSoundPack1)
 
-
+    T_MusicKnowledge = Text.Text("Music By Eric Matyas",Rubik,14,Colors.A_white,screenW,screenH,gameDisplay)
+    B_MusicKnowledge = Interactive.Button(T_MusicKnowledge.GetX(),T_MusicKnowledge.GetY(),T_MusicKnowledge.GetWidth(),T_MusicKnowledge.GetHieght(), Colors.A_black, gameDisplay, T_MusicKnowledge, LoadMusicWebsite,pos="bottomright",sound=btSoundPack1)
+    
     TextList += [T_MusicLabel,T_EffectLabel]
-    buttons += [B_MusicVol,B_EffectVol]
-
+    buttons += [B_MusicVol,B_EffectVol,B_MusicKnowledge]
 
     for i in TextList:
         i.AddText(forceUpdate=True)
@@ -735,15 +748,18 @@ def MainMenu():
         #Check for Button interaction
         for button in buttons:
             button.Update()
-
+        
         for event in pygame.event.get():
             #Quit Game
             if event.type == pygame.QUIT: QuitSim()
-                
+            
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.mixer.music.fadeout()
                     QuitSim()
+                elif event.key == pygame.K_z:
+                    w, h = pygame.display.get_surface().get_size()
+                    print(w,h)
 
             #If window has been resized
             elif event.type==pygame.VIDEORESIZE:
@@ -753,7 +769,7 @@ def MainMenu():
                 if newHeight < DefualtScreenH:
                     newHeight = DefualtScreenH
                 
-                screen=pygame.display.set_mode((newWidth,newHeight),pygame.RESIZABLE)
+                pygame.display.set_mode((newWidth,newHeight),pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
                 screenW = newWidth
                 screenH = newHeight
                 MenuH = newHeight
@@ -769,34 +785,51 @@ def CreditsMenu():
     pygame.mixer.music.load(creditsMusic)
     pygame.mixer.music.play(-1)
 
-    credisMenuTitle = IM.ImageType(CustomPath.Path("assets\AboutTitle.png"),gameDisplay)
-    go = True
+    credisMenuTitle = IM.ImageType(CustomPath.Path("assets\CreditsTitle.png"),gameDisplay)
     buttons = []
 
     gameDisplay.fill(Colors.A_black)
     pygame.display.update()
     credisMenuTitle.AutoScale(screenW,screenH,2,0.7)
     credisMenuTitle.Draw((screenW//2,screenH//8))
+
+    global shouldS
+    shouldS = False
+    def _main_menu():
+        global shouldS
+        if shouldS: 
+            LoadSecret2()
+        MainMenu()
+    def _helper():
+        global shouldS
+        shouldS = True
+        LoadSecret([T_About1,T_About2])
     
     #Display all text
     T_About1 = Text.Text("Game created by: John Wiesner ",Rubik,25,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center")
 
     T_ClickBait = Text.Text("MrJohnWeez",Rubik,22,Colors.A_RichBlueGreen,T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],gameDisplay)
-    bClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter",sound=btSoundPack1)
+    B_ClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter",sound=btSoundPack1)
    
-    T_About2 = Text.Text("Special thanks to Chuck Conner as alpha tester",Rubik,20,Colors.A_white,bClickBait.getBottomCenter()[0],bClickBait.getBottomCenter()[1]+10,gameDisplay,pos="topcenter")
+    T_About2 = Text.Text("Special thanks to Chuck Conner for game testing",Rubik,20,Colors.A_white,B_ClickBait.getBottomCenter()[0],B_ClickBait.getBottomCenter()[1]+10,gameDisplay,pos="topcenter")
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
     T_Back = Text.Text("Back",Rubik,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
-    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,MainMenu,pos="bottomcenter",sound=btSoundPack1)
+    B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,_main_menu,pos="bottomcenter",sound=btSoundPack1)
 
+    T_Secret = Text.Text("",Rubik,14,Colors.A_black,0,0,gameDisplay)
+    B_Secret = Interactive.Button(0,0,screenW,40, Colors.A_black, gameDisplay, T_Secret, _helper)
+    
     TextList = [T_About1,T_About2,T_Copyright]
-    buttons += [B_Back,bClickBait]
+    buttons += [B_Back,B_ClickBait,B_Secret]
+
     for i in TextList: i.AddText(forceUpdate=True)
     
-    while go:
+    while True:
         #Check for Button interaction
-        for button in buttons: button.Update()
+        for button in buttons:
+            button.Update()
+
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT: QuitSim()
 
@@ -812,6 +845,6 @@ def CreditsMenu():
                 screenW = newWidth
                 screenH = newHeight
                 MenuH = newHeight
-                AboutMenu()
+                CreditsMenu()
 
 MainMenu()  #launch game
