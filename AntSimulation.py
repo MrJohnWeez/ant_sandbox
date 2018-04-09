@@ -3,6 +3,7 @@ MrJohnWeez©2018 all rights reserved.
 
 ToDo List:
 -Comment Code and clean up (2 hours)
+-Load special sound
 -Add help menu (Link to my website with a wiki-type thing) (3 hours)
 """
 
@@ -61,9 +62,10 @@ clearWipeSound2 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\clearWipeSo
 clearCanvasSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ClearCanvasSound.ogg"))
 killAntsSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\KillAntsSound.ogg"))
 zombieAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ZombieSound1.ogg"))
+specialSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\secret.ogg"))
 btSoundPack1 = [buttonHoverSound1,buttonClickedSound]
 
-soundList += [buttonHoverSound1,buttonClickedSound,clearWipeSound1,clearWipeSound2,clearCanvasSound,killAntsSound,zombieAntSound]
+soundList += [buttonHoverSound1,buttonClickedSound,clearWipeSound1,clearWipeSound2,clearCanvasSound,killAntsSound,zombieAntSound,specialSound]
 #Ant Sounds
 antSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\BasicAntSound.ogg"))
 plantAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\PlantAntSound.ogg"))
@@ -196,7 +198,7 @@ def LoadSecret(textArrays):
     fontSize = 25
     T_S1 = Text.Text("For the brave souls who found this link: Thou Art the chosen ones.",Rubik,fontSize,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center",backgroundColor=Colors.A_black)
     T_S2 = Text.Text("For programming is a way of life, a journey, a quest, but without rest",Rubik,fontSize,Colors.A_white,T_S1.getBottomCenter()[0],T_S1.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
-    T_S3 = Text.Text("and unsolved puzzles. To you, true survivers, kings of men, I say this:",Rubik,fontSize,Colors.A_white,T_S2.getBottomCenter()[0],T_S2.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+    T_S3 = Text.Text("and unsolved puzzles. To you, true survivors, kings of men, I say this:",Rubik,fontSize,Colors.A_white,T_S2.getBottomCenter()[0],T_S2.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
     T_S4 = Text.Text("Never gonna give you up, never gonna let you down,",Rubik,fontSize,Colors.A_white,T_S3.getBottomCenter()[0],T_S3.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
     T_S5 = Text.Text("never gonna run around and desert you. Never gonna make you cry,",Rubik,fontSize,Colors.A_white,T_S4.getBottomCenter()[0],T_S4.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
     T_S6 = Text.Text("never gonna say goodbye. Never gonna tell a lie and hurt you.",Rubik,fontSize,Colors.A_white,T_S5.getBottomCenter()[0],T_S5.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
@@ -669,7 +671,7 @@ def MainMenu():
     """Main menu"""
     global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
 
-    pygame.mixer.music.set_volume((musicVolume/1)*0.4)
+    pygame.mixer.music.set_volume((musicVolume/10)*0.4)
     pygame.mixer.music.load(mainMenuMusic)
     pygame.mixer.music.play(-1)
 
@@ -689,7 +691,7 @@ def MainMenu():
             musicVolume += 1
         if musicVolume > 10:
             musicVolume = 0
-        pygame.mixer.music.set_volume(musicVolume/10)
+        pygame.mixer.music.set_volume((musicVolume/10)*0.4)
         B_MusicVol.ChangeMsg(str(musicVolume*10)+"%")
 
     def UpdateEffectVolume(shouldIncrease = True):
@@ -781,7 +783,7 @@ def CreditsMenu():
     """Credis menu"""
     global screenW,screenH,MenuH    #Not 100% sure why these needed to be re-declared
 
-    pygame.mixer.music.set_volume((musicVolume/10)*0.4)
+    pygame.mixer.music.set_volume((musicVolume/10)*0.35)
     pygame.mixer.music.load(creditsMusic)
     pygame.mixer.music.play(-1)
 
@@ -818,7 +820,7 @@ def CreditsMenu():
     B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,_main_menu,pos="bottomcenter",sound=btSoundPack1)
 
     T_Secret = Text.Text("",Rubik,14,Colors.A_black,0,0,gameDisplay)
-    B_Secret = Interactive.Button(0,0,screenW,40, Colors.A_black, gameDisplay, T_Secret, _helper)
+    B_Secret = Interactive.Button(0,0,screenW,40, Colors.A_black, gameDisplay, T_Secret, _helper,sound=[buttonHoverSound1,specialSound])
     
     TextList = [T_About1,T_About2,T_Copyright]
     buttons += [B_Back,B_ClickBait,B_Secret]
