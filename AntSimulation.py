@@ -4,6 +4,8 @@ MrJohnWeez©2018 all rights reserved.
 ToDo List:
 -Comment Code and clean up (2 hours)
 -Load special sound
+-Pressing the volume down button clears the screen
+
 -Add help menu (Link to my website with a wiki-type thing) (3 hours)
 """
 
@@ -402,6 +404,8 @@ def AntSimulation():
         isPaused.ToggleState()
         MusicToggle(isPaused.state)
         bPause.ChangeMsg("Play") if isPaused.state else bPause.ChangeMsg("Pause")
+        bPause.Update()
+        bPause.DrawButton()
 
     def ClearSim():
         """Clears the entire ant screen of any ants and their paths"""
@@ -418,6 +422,8 @@ def AntSimulation():
         """Decreases the simulation speed by a factor of double the prevous value"""
         simulationSpeed.Increase()
         bSpeed.ChangeMsg("x"+str(simulationSpeed.value))
+        bSpeed.Update()
+        bSpeed.DrawButton()
 
 
     T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft",backgroundColor=Colors.A_black)
@@ -437,7 +443,7 @@ def AntSimulation():
     
     T_kill = Text.Text("Kill",Rubik,20,Colors.A_white,B_reset.getBottomRight()[0],B_reset.getBottomRight()[1],gameDisplay)
     tempHeight = T_kill.GetHieght()+4
-    B_kill = Interactive.ButtonImage(T_kill.GetX(),T_kill.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_kill,Ant.Ant.KillAllAnts,pos="topright",sound=[buttonHoverSound1,killAntsSound])
+    B_kill = Interactive.ButtonImage(T_kill.GetX(),T_kill.GetY(),int(tempHeight*IM.AspectShort),tempHeight,IM.IBShortRed[1],IM.IBShortRed[0],IM.IBShortRed[2],gameDisplay,T_kill,Ant.Ant.KillAllAnts,pos="topright",sound=[buttonHoverSound1,killAntsSound]) 
     
     T_clearPath = Text.Text("Clear",Rubik,20,Colors.A_white,B_kill.getBottomRight()[0],B_kill.getBottomRight()[1],gameDisplay)
     tempHeight = T_clearPath.GetHieght()+4
@@ -629,14 +635,18 @@ def AntSimulation():
 
             #Press 'C' to clear ants and screen
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_c: ClearSim()
                 if event.key == pygame.K_p:
-                    bPause.action()
-                if event.key == pygame.K_z:
-                    #print(Ant.Ant.GetAntCount())
-                    # ResetSim()
-                    w, h = pygame.display.get_surface().get_size()
-                    print(w,h)
+                    togglePause()
+                elif event.key == pygame.K_k:
+                    Ant.Ant.KillAllAnts()
+                elif event.key == pygame.K_c:
+                    T_reset()
+                elif event.key == pygame.K_m:
+                    MainMenu()
+                elif event.key == pygame.K_r:
+                    AntSimulation()
+                elif event.key == pygame.K_s:
+                    speedButton()
 
             #If window has been resized
             elif event.type==pygame.VIDEORESIZE:
