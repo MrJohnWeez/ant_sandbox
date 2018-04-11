@@ -1,3 +1,5 @@
+"""Defines the user's path based on the OS"""
+
 import sys
 import os
 

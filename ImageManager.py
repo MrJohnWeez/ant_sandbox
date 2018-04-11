@@ -1,7 +1,12 @@
+"""Allows for easy manipulation of images on pygames' screen
+
+Also holds all the button image paths for the game
+"""
 
 import pygame
 import Colors
 import CustomPath
+
 class ImageType:
     """Creates an image that can be moved around on the pygame screen"""
     def __init__(self,path,display,xScale=1, yScale=1):
@@ -94,4 +99,3 @@ IBShortLava = CreateButtonArray("ShortLava.png")
 IBShortGreen = CreateButtonArray("ShortGreen.png")
 IBShortPurple = CreateButtonArray("ShortPurple.png")
 IBShortYellow = CreateButtonArray("ShortYellow.png")
-

@@ -1,8 +1,10 @@
+"""Allows for easy use of buttons and text boxes within pygame"""
+
+
 import pygame
 import Colors
 import Text
 import ImageManager
-
 
 
 ######################################################################################################################################################################
@@ -55,12 +57,16 @@ class ButtonBase:
             self.textObject.AddText(forceUpdate=True)
 
     def getX(self):
+        """Return x pos"""
         return self.x
     def getY(self):
+        """Return y pos"""
         return self.y
     def getW(self):
+        """Return width of button"""
         return self.w
     def getH(self):
+        """Return height of button"""
         return self.h
     def getTopLeft(self):
         """Returns top left cornner cordinate"""
@@ -75,12 +81,16 @@ class ButtonBase:
         """Returns bottom right cornner cordinate"""
         return (self.getX()+self.getW(), self.getY()+self.getH())
     def getCenter(self):
+        """Returns the center cordinates of the button object"""
         return (self.getX()+self.getW()//2,self.getY()+self.getH()//2)
     def getBottomCenter(self):
+        """Returns the buttom center cordinates of the button object"""
         return (self.getX()+self.getW()//2,self.getY()+self.getH())
     def getTopCenter(self):
+        """Returns the top center cordinates of the button object"""
         return (self.getX()+self.getW()//2,self.getY())  
     def getRect(self):
+        """Returns the full rect of the button object"""
         return pygame.Rect(self.x,self.y,self.w,self.h)
 
 ######################################################################################################################################################################
@@ -157,7 +167,6 @@ class Button(ButtonBase):
         self.Update()
     
 
-    
 ######################################################################################################################################################################
 
 class ButtonImage(ButtonBase):
@@ -206,6 +215,7 @@ class ButtonImage(ButtonBase):
         self.clickedImage.Scale(self.w/self.clickedImage.getW(),self.h/self.clickedImage.getH())
 
     def UpdateBackground(self):
+        """Saves the background before drawing the button image"""
         self.image.blit(self.gameDisplay,(0,0),((self.x,self.y),(self.w,self.h)))  # Blit portion of the display to the image
 
     def UpdateToScreenImage(self, buttonImageType):
@@ -343,11 +353,6 @@ class ButtonToggle(ButtonBase):
         self.ToggleOff(True)
 
 
-
-
-
-
-
 ######################################################################################################################################################################
 ######################################################################################################################################################################
 #USER INPUTS            #USER INPUTS                #USER INPUTS            #USER INPUTS            #USER INPUTS            #USER INPUTS               #USER INPUTS
@@ -430,23 +435,26 @@ class InputBox:
         """Returns the text in the box"""
         return self.textObject.text
     def getX(self):
+        """Returns the x pos of the object"""
         return self.rect.x
     def getY(self):
+        """Returns the y pos of the object"""
         return self.rect.y
     def getW(self):
+        """Returns the width of the object"""
         return self.rect.w
     def getH(self):
+        """Returns the height of the object"""
         return self.rect.h
     def getTopLeft(self):
+        """Returns the top left cordinate of the object"""
         return (self.getX(), self.getY())
     def getTopRight(self):
+        """Returns the top right cordinate of the object"""
         return (self.getX()+self.getW(), self.getY())
     def getBottomLeft(self):
+        """Returns the bottom left cordinate of the object"""
         return (self.getX(), self.getY()+self.getH())
     def getBottomRight(self):
+        """Returns the bottom right cordinate of the object"""
         return (self.getX()+self.getW(), self.getY()+self.getH())
-
-
-
-
-######################################################################################################################################################################

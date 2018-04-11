@@ -1,3 +1,67 @@
+""" Ant instance generator class:
+
+Different types of ants:
+
+    Movement = the way the ant moves
+    Kills = can kill ants of this type
+    Be Killed = ants that kill it
+    OverWrite = can over wirte ant paths of this type
+    Be Written = ants that can ovewirte its path
+
+    _________________________________________________
+    BaseAnt:
+        Movement - Moves left on black else right
+        Kills - None
+        Be Killed - Fire, Crazy
+        OverWrite - All
+        Be Written - Fire, Crazy
+    _________________________________________________
+    WaterAnt:
+        Movement - Random
+        Kills - Fire
+        Be Killed - Crazy
+        OverWrite - Plant, Fire, Crazy
+        Be Written - All Excluding(Fire)
+    _________________________________________________
+    WoodAnt:
+        Movement - Random within water path
+        Kills - None
+        Be Killed - Fire, Crazy
+        OverWrite - Water
+        Be Written - Fire, Crazy
+    _________________________________________________
+    FireAnt:
+        Movement - Spiral like
+        Kills - Wood, Plant
+        Be Killed - Water, Crazy
+        OverWrite - All Excluding(Water)
+        Be Written - Crazy, Water, Base
+    _________________________________________________
+    PlantAnt:
+        Movement - Randomly within water path
+        Kills - None
+        Be Killed - Fire, Crazy
+        OverWrite - Water
+        Be Written - Fire, Crazy
+    _________________________________________________
+    ZombieAnt:
+        Movement - Random direction (zombie like line)
+        *Takes over all ants Excluding(Crazy)
+        Be Killed - Crazy
+        OverWrite - Crazy
+        Be Written - All
+    _________________________________________________
+    CrazyAnt:
+        Movement - Randomly
+        Kills - All
+        Be Killed - See Note
+        OverWrite - See Note
+        Be Written - All ants but only 1000 times until they die
+        Note: Has a life of 10000 meaning
+            The ant can overwrite paths but can only do
+            so 10000 times
+"""
+
 import pygame
 import Colors
 import random
@@ -80,7 +144,7 @@ class Ant:
         cls.antLimit = value
     @classmethod
     def GetAntLimit(cls):
-        """Limits how many ants are allowed to live at a time"""
+        """Gets how many ants are allowed to live at a time"""
         return cls.antLimit
 
     def Spawn(self):
@@ -234,7 +298,6 @@ class Ant:
             Ant.antArray.append(self)
         self.TicksLeft -= 1
         if self.TicksLeft <= 0:
-            #print(self.speedScalar,"     ", self.speed, "      ", self.speedScalar-self.speed)
             self.TicksLeft = self.speedScalar-self.speed
             pix = self.display.get_at((self.x,self.y))
             if pix == Colors.A_black:
@@ -269,11 +332,6 @@ class Ant:
         else:
             Ant.updateArray.append(pygame.Rect(self.x,self.y,1,1))
             self.display.fill(self.TempScreenColor, ((self.x,self.y), (1,1)))
-
-
-
-
-
 
 
 #####################################################################################################################################################################
@@ -420,8 +478,6 @@ class AntFire(Ant):
                     self.y = oldy
                     self.MoveCurrentSpace()
                 
-            
-
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
         if len(Ant.antArray) < Ant.antLimit:
@@ -492,8 +548,6 @@ class AntPlant(Ant):
                 self.display.fill(Colors.A_Plant, ((self.x,self.y), (1,1)))
             self.Grow()
             
-
-
     def Spawn(self):
         """Spawns ant in game and turns the current mouse pos to color of ant"""
         if len(Ant.antArray) < Ant.antLimit:
@@ -592,7 +646,6 @@ class AntZombie(Ant):
             self.facing = random.randint(0,3)
             self.display.set_at((self.x,self.y), Colors.A_Zombie)
             pygame.display.update(pygame.Rect(self.x,self.y,1,1))
-
 
 
 #####################################################################################################################################################################

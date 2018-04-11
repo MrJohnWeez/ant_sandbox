@@ -1,3 +1,5 @@
+"""Creates a moveable text object in pygame"""
+
 import pygame
 
 class Text:
@@ -97,6 +99,7 @@ class Text:
         """Returns whole rect of text object"""
         return self.TextRect
     def GetText(self):
+        """Returns the string in the text object"""
         return self.text
     def getTopLeft(self):
         """Returns top left cornner cordinate"""
@@ -111,10 +114,13 @@ class Text:
         """Returns bottom right cornner cordinate"""
         return (self.GetX()+self.GetWidth(), self.GetY()+self.GetHieght())
     def getCenter(self):
+        """Returns the center cordinate"""
         return (self.GetX()+self.GetWidth()//2,self.GetY()+self.GetHieght()//2)
     def getTopCenter(self):
+        """Returns the top center cordinate"""
         return (self.GetX()+self.GetWidth()//2,self.GetY())
     def getBottomCenter(self):
+        """Retruns the bottom center cordinate"""
         return (self.GetX()+self.GetWidth()//2,self.GetY()+self.GetHieght())
 
 

@@ -1,6 +1,12 @@
+
+"""File allows for easy access to the way ants
+move"""
+
 import pygame
+import CustomMath
 
 class AntStepVar:
+    """Varible class that allows for min/max clamping and string converstion"""
     def __init__(self, minValue, maxValue, startValue=1):
         """Class for incrementing a varible for an ant step"""
         self.value = startValue
@@ -16,11 +22,8 @@ class AntStepVar:
             self.value += step
         else:
             self.value -= step
+        self.value = CustomMath.Clamp(self.value,self.min,self.max)
 
-        if self.value > self.max:
-            self.value = self.min
-        elif self.value < self.min:
-            self.value = self.max
     def UpdateByString(self, stringValue):
         """Update the value with the given string"""
         if stringValue.isdigit():
@@ -29,11 +32,7 @@ class AntStepVar:
             self.value = self.min
         else:
             self.value = self.startValue
-        
-        if self.value > self.max:
-            self.value = self.max
-        elif self.value < self.min:
-            self.value = self.min
+        self.value = CustomMath.Clamp(self.value,self.min,self.max)
 
     def GetValue(self):
         """Return value of class"""
@@ -52,24 +51,33 @@ class AntStepVar:
         self.value = self.startValue
 
     def GetMin(self):
+        """Returns the min value the varible can have"""
         return self.min
+        
     def GetMax(self):
+        """Returns the max value the varible can have"""
         return self.max
         
 class AntStepGroup():
+    """A group of antStepVars that allow for quicker access to group functions"""
+
     def __init__(self,minValue,maxValue):
         self.up = AntStepVar(minValue,maxValue)
         self.down = AntStepVar(minValue,maxValue)
         self.right = AntStepVar(minValue,maxValue)
         self.left = AntStepVar(minValue,maxValue)
+
     def SetMaxValue(self, value):
+        """Sets all the antstepvar max values to the new value entered"""
         self.up.SetMaxValue(value)
         self.down.SetMaxValue(value)
         self.right.SetMaxValue(value)
         self.left.SetMaxValue(value)
         
     def GetGroup(self):
+        """Returns the AntstepVar objects of the ant group object"""
         return [self.up, self.down, self.right, self.left]
 
     def GetGroupValues(self):
+        """Returns all the values of the right, left, up, down ant step varibles"""
         return [x.GetValue() for x in self.GetGroup()]
