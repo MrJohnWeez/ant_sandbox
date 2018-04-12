@@ -1,9 +1,6 @@
 """
 MrJohnWeez©2018 all rights reserved.
 This File contains all functions to generate the ant simulation game/sandbox.
-
-ToDo List:
--Add help menu (Link to my website with a wiki-type thing) (3 hours)
 """
 
 #3rd party imports
@@ -42,10 +39,14 @@ screenW = DefualtScreenW
 MenuX,MenuY = 0,0
 MenuW,MenuH = 200,screenH
 
+#Load game Icon
+gameIcon = pygame.image.load(CustomPath.Path("assets\GameIcon.png"))
+
 #Set up pygame
 pygame.init()
 pygame.mixer.init()
 pygame.display.set_caption('Ant Simulation')
+pygame.display.set_icon(gameIcon)
 gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 
 if not os.path.exists(CustomPath.Path("ScreenShots")):
@@ -180,7 +181,7 @@ def LoadMusicWebsite():
 
 def LoadHelpLink():
     """Load Ant sim help on MrJohnWeez website"""
-    url = 'https://mrjohnweez.weebly.com'
+    url = 'https://mrjohnweez.weebly.com/ant-simulation.html'
     if sys.platform == 'darwin':    # in case of OS X
         subprocess.Popen(['open', url])
     else:
