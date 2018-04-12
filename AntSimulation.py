@@ -13,6 +13,7 @@ import pygame
 import subprocess
 import webbrowser
 import sys
+import os
 
 #Self Custom imports
 import Ant
@@ -47,6 +48,8 @@ pygame.mixer.init()
 pygame.display.set_caption('Ant Simulation')
 gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 
+if not os.path.exists(CustomPath.Path("ScreenShots")):
+    os.makedirs(CustomPath.Path("ScreenShots"))
 #Game sounds
 buttonHoverSound1 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonHoverOverSound1.ogg"))
 buttonClickedSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonClickedSound1.ogg"))
@@ -621,18 +624,29 @@ def AntSimulation():
                         B.handle_event(event)
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_p or event.key == pygame.K_LSHIFT:
                         togglePause()
-                    elif event.key == pygame.K_k:
+                    elif event.key == pygame.K_e:
                         Ant.Ant.KillAllAnts()
-                    elif event.key == pygame.K_f:
-                        ResetSim()
-                    elif event.key == pygame.K_r:
+                    elif event.key == pygame.K_SPACE:
+                        ClearSim()
+                    elif event.key == pygame.K_q:
                         AntSimulation()
                     elif event.key == pygame.K_s:
                         SpeedButton()
                     elif event.key == pygame.K_ESCAPE:
                         MainMenu()
+                    elif event.key == pygame.K_w:
+                        rect = pygame.Rect(25, 25, 100, 50)
+                        screenshot = pygame.Surface((100, 50))
+                        screenshot.blit(gameDisplay, (0,0), area=rect)
+                        path = CustomPath.Path("ScreenShots")
+                        time_taken = time.asctime(time.localtime(time.time()))
+                        time_taken = time_taken.replace(" ", "_")
+                        time_taken = time_taken.replace(":", "-")
+                        path = path + "\\" + time_taken + ".jpg"
+                        pygame.image.save(gameDisplay, path)
+                        print("A Screen shot has been taken and saved as ", path)
 
             #If window has been resized
             elif event.type==pygame.VIDEORESIZE:
