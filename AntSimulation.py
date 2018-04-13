@@ -39,18 +39,17 @@ screenW = DefualtScreenW
 MenuX,MenuY = 0,0
 MenuW,MenuH = 200,screenH
 
-#Load game Icon
-gameIcon = pygame.image.load(CustomPath.Path("assets\GameIcon.png"))
-
 #Set up pygame
 pygame.init()
 pygame.mixer.init()
-pygame.display.set_caption('Ant Simulation')
-pygame.display.set_icon(gameIcon)
 gameDisplay = pygame.display.set_mode((screenW,screenH),pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
+pygame.display.set_caption('Ant Simulation')
+pygame.display.set_icon(pygame.image.load(CustomPath.Path("assets\GameIcon.png")))
+
 
 if not os.path.exists(CustomPath.Path("ScreenShots")):
     os.makedirs(CustomPath.Path("ScreenShots"))
+    
 #Game sounds
 buttonHoverSound1 = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonHoverOverSound1.ogg"))
 buttonClickedSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ButtonClickedSound1.ogg"))
@@ -230,7 +229,7 @@ def MusicToggle(isOn):
 def QuitSim():
     """Closes Ant simulation game"""
     pygame.quit()
-    quit()
+    sys.exit()
     
 class ToggleVar:
     """A basic toggle varible class"""
@@ -295,43 +294,45 @@ class ToolType:
             tempAnt.Spawn()         
             self.T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
         
-        if self.activeTool == "Ant":
-            tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            antSound.play()
-        elif self.activeTool == "WaterAnt":
-            tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            waterAntSound.play()
-        elif self.activeTool == "WoodAnt":
-            tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            woodAntSound.play()
-        elif self.activeTool == "FireAnt":
-            newList = []
-            for i in newStep:
-                i += 14 #Step offset of fire ant type
-                if i > screenH:
-                    i = (i - screenH)
-                elif i < 0:
-                    i = screenH + i
-                newList += [i]
-            tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, self.antSpeed.value)
-            HelperAdd()
-            fireAntSound.play()
-        elif self.activeTool == "PlantAnt":
-            tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            plantAntSound.play()
-        elif self.activeTool == "ZombieAnt":
-            tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            zombieAntSound.play()
-        elif self.activeTool == "CrazyAnt":
-            tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
-            HelperAdd()
-            crazyAntSound.play()
-        elif self.activeTool == "RemovePath":
+        if len(Ant.Ant.antArray) < Ant.Ant.antLimit:
+            if self.activeTool == "Ant":
+                tempAnt = Ant.Ant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                antSound.play()
+            elif self.activeTool == "WaterAnt":
+                tempAnt = Ant.AntWater((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                waterAntSound.play()
+            elif self.activeTool == "WoodAnt":
+                tempAnt = Ant.AntWood((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                woodAntSound.play()
+            elif self.activeTool == "FireAnt":
+                newList = []
+                for i in newStep:
+                    i += 14 #Step offset of fire ant type
+                    if i > screenH:
+                        i = (i - screenH)
+                    elif i < 0:
+                        i = screenH + i
+                    newList += [i]
+                tempAnt = Ant.AntFire((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newList, self.antSpeed.value)
+                HelperAdd()
+                fireAntSound.play()
+            elif self.activeTool == "PlantAnt":
+                tempAnt = Ant.AntPlant((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                plantAntSound.play()
+            elif self.activeTool == "ZombieAnt":
+                tempAnt = Ant.AntZombie((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                zombieAntSound.play()
+            elif self.activeTool == "CrazyAnt":
+                tempAnt = Ant.AntCrazy((mouse[0]),(mouse[1]),pygame.Rect(MenuW,0,screenW,screenH),0,gameDisplay,newStep, self.antSpeed.value)
+                HelperAdd()
+                crazyAntSound.play()
+                
+        if self.activeTool == "RemovePath":
             """Places a white rectange on screen with the user's cusor being in the center"""
             cubeSize = 15
             x = mouse[0] - cubeSize
@@ -420,7 +421,7 @@ def AntSimulation():
         B_Speed.DrawButton()
 
     #Plain texts on screen
-    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft",backgroundColor=Colors.A_black)
+    T_Copyright = Text.Text("MrJohnWeez™2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft",backgroundColor=Colors.A_black)
     T_AntCount = Text.Text("0/"+str(Ant.Ant.antLimit),BNFont,20,Colors.A_white,MenuW,screenH,gameDisplay,True,"bottomright",Colors.A_black)
     texts += [T_Copyright,T_AntCount]
 
@@ -564,8 +565,8 @@ def AntSimulation():
     for sbox in stepBoxesList:
         for Bn in sbox.buttonObjects:
             buttonRects2 += [ButtonRect(Bn.getRect())]
+            
     #Main loop
-   
     while True:
         
         mouse = pygame.mouse.get_pos()
@@ -738,7 +739,7 @@ def MainMenu():
     buttons += [B_Play,B_Quit,B_Help,B_Credits]
 
     #Include copyright in lower left
-    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
+    T_Copyright = Text.Text("MrJohnWeez™2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
     TextList += [T_Copyright]
 
     #Set up volume buttons in lower left
@@ -824,7 +825,7 @@ def CreditsMenu():
     B_ClickBait = Interactive.Button(T_About1.getBottomCenter()[0],T_About1.getBottomCenter()[1],T_ClickBait.GetWidth()+2,T_ClickBait.GetHieght(), Colors.A_black, gameDisplay, T_ClickBait, LoadMJWLink,pos="topcenter",sound=btSoundPack1)
    
     T_About2 = Text.Text("Special thanks to Chuck Conner for game testing",Rubik,20,Colors.A_white,B_ClickBait.getBottomCenter()[0],B_ClickBait.getBottomCenter()[1]+10,gameDisplay,pos="topcenter")
-    T_Copyright = Text.Text("MrJohnWeez©2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
+    T_Copyright = Text.Text("MrJohnWeez™2018",Rubik,12,Colors.A_white,0,screenH,gameDisplay,pos="bottomleft")
 
     T_Back = Text.Text("Back",Rubik,30,Colors.A_white,screenW//2,screenH-5,gameDisplay)
     B_Back = Interactive.ButtonImage(T_Back.GetX(),T_Back.GetY(),int(50*4.3),50,IM.IBLongBlue[1],IM.IBLongBlue[0],IM.IBLongBlue[2],gameDisplay,T_Back,_main_menu,pos="bottomcenter",sound=btSoundPack1)
