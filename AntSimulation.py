@@ -61,7 +61,8 @@ zombieAntSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\ZombieSound1
 specialSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\secret.ogg"))
 btSoundPack1 = [buttonHoverSound1,buttonClickedSound]
 
-soundList = [buttonHoverSound1,buttonClickedSound,clearWipeSound1,clearWipeSound2,clearCanvasSound,killAntsSound,zombieAntSound,specialSound]
+soundList = [buttonHoverSound1,buttonClickedSound,clearWipeSound1,
+            clearWipeSound2,clearCanvasSound,killAntsSound,zombieAntSound,specialSound]
 
 #Ant Sounds
 antSound = pygame.mixer.Sound(CustomPath.Path("assets\Sounds\\BasicAntSound.ogg"))
@@ -88,8 +89,10 @@ for s in soundList:
 
 #Classes:
 class StepBoxes:
-    """Creates a set of interactive text boxes that executes functions based on given args. NOT A DEPENDENT CLASS but more like a c++ Struct!"""
-    def __init__(self, x, y, fontPath, fontSize, display, runFunction, clearFunction, randomFunction, updateVars, speedFunction):
+    """Creates a set of interactive text boxes that executes functions
+    based on given args. NOT A DEPENDENT CLASS but more like a c++ Struct!"""
+    def __init__(self, x, y, fontPath, fontSize, display, runFunction,
+                 clearFunction, randomFunction, updateVars, speedFunction):
         self.x = x
         self.y = y
         self.fontPath = fontPath
@@ -193,12 +196,21 @@ def LoadSecret(playSound = False):
     if playSound:
         spacing = 0
         fontSize = 25
-        T_S1 = Text.Text("For the brave souls who found this link: Thou Art the chosen ones.",Rubik,fontSize,Colors.A_white,screenW//2,screenH//2,gameDisplay,pos="center",backgroundColor=Colors.A_black)
-        T_S2 = Text.Text("For programming is a way of life, a journey, a quest, but without rest",Rubik,fontSize,Colors.A_white,T_S1.getBottomCenter()[0],T_S1.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
-        T_S3 = Text.Text("and unsolved puzzles. To you, true survivors, kings of men, I say this:",Rubik,fontSize,Colors.A_white,T_S2.getBottomCenter()[0],T_S2.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
-        T_S4 = Text.Text("Never gonna give you up, never gonna let you down,",Rubik,fontSize,Colors.A_white,T_S3.getBottomCenter()[0],T_S3.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
-        T_S5 = Text.Text("never gonna run around and desert you. Never gonna make you cry,",Rubik,fontSize,Colors.A_white,T_S4.getBottomCenter()[0],T_S4.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
-        T_S6 = Text.Text("never gonna say goodbye. Never gonna tell a lie and hurt you.",Rubik,fontSize,Colors.A_white,T_S5.getBottomCenter()[0],T_S5.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=Colors.A_black)
+        s1 = "For the brave souls who found this link: Thou Art the chosen ones."
+        s2 = "For programming is a way of life, a journey, a quest, but without rest"
+        s3 = "and unsolved puzzles. To you, true survivors, kings of men, I say this:"
+        s4 = "Never gonna give you up, never gonna let you down,"
+        s5 = "never gonna run around and desert you. Never gonna make you cry,"
+        s6 = "never gonna say goodbye. Never gonna tell a lie and hurt you."
+
+        wc = Colors.A_white
+        bc = Colors.A_black
+        T_S1 = Text.Text(s1,Rubik,fontSize,wc,screenW//2,screenH//2,gameDisplay,pos="center",backgroundColor=Colors.A_black)
+        T_S2 = Text.Text(s2,Rubik,fontSize,wc,T_S1.getBottomCenter()[0],T_S1.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=bc)
+        T_S3 = Text.Text(s3,Rubik,fontSize,wc,T_S2.getBottomCenter()[0],T_S2.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=bc)
+        T_S4 = Text.Text(s4,Rubik,fontSize,wc,T_S3.getBottomCenter()[0],T_S3.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=bc)
+        T_S5 = Text.Text(s5,Rubik,fontSize,wc,T_S4.getBottomCenter()[0],T_S4.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=bc)
+        T_S6 = Text.Text(s6,Rubik,fontSize,wc,T_S5.getBottomCenter()[0],T_S5.getBottomCenter()[1]+spacing,gameDisplay,pos="topcenter",backgroundColor=bc)
         
         TextList = [T_S1,T_S2,T_S3,T_S4,T_S5,T_S6]
 
@@ -277,7 +289,8 @@ class AntSpeed:
 
 
 class ToolType:
-    """Class for all the different interactive tools within this ant simulation game"""
+    """Class for all the different interactive 
+    tools within this ant simulation game"""
     def __init__(self, activeTool, antSteps, antSpeed,T_AntCount,isPaused):
         self.activeTool = activeTool
         self.antSteps = antSteps
@@ -333,7 +346,8 @@ class ToolType:
                 crazyAntSound.play()
                 
         if self.activeTool == "RemovePath":
-            """Places a white rectange on screen with the user's cusor being in the center"""
+            """Places a white rectange on screen with the user's cusor being
+             in the center"""
             cubeSize = 15
             x = mouse[0] - cubeSize
             y = mouse[1] - cubeSize
@@ -352,8 +366,9 @@ class ToolType:
             if self.isPaused.state:
                 Ant.Ant.UpdateAllAnts()
                 #Update ant count if ants die
-                if self.T_AntCount.GetText() != str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit):
-                    self.T_AntCount.AddText(str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit),True)
+                newString = str(Ant.Ant.GetAntCount())+"/"+str(Ant.Ant.antLimit)
+                if self.T_AntCount.GetText() != newString:
+                    self.T_AntCount.AddText(newString,True)
 
     def ChangeTool(self, newTool):
         """Sets the active tool to the new given string"""
@@ -479,7 +494,8 @@ def AntSimulation():
             boxVars[i].updateText(str(varList[i].GetValue()))
         
     #Ant step boxes module
-    StepBox1 = StepBoxes(MenuW//2.6,screenH-180,BNFont, 20, gameDisplay, UpdateStepVar, ResetStepVars, RandomStepVars, antSteps.GetGroup(), antSpeed.UpdateAntSpeed)
+    StepBox1 = StepBoxes(MenuW//2.6,screenH-180,BNFont, 20, gameDisplay, UpdateStepVar, 
+                            ResetStepVars, RandomStepVars, antSteps.GetGroup(), antSpeed.UpdateAntSpeed)
     stepBoxesList = [StepBox1]
 
     #aTB_ = Ant Type Buttons
